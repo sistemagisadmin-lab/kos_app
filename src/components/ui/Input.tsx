@@ -31,9 +31,10 @@ export function Input({
         <Text className="text-sm font-medium text-gray-700 mb-1.5">{label}</Text>
       )}
       <View
+        style={isFocused ? { borderColor: '#58c763' } : undefined}
         className={cn(
           'flex-row items-center h-12 w-full rounded-xl border bg-white px-3.5 transition-all shadow-sm',
-          isFocused ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-200',
+          isFocused ? 'border-[#58c763]' : 'border-gray-200',
           error ? 'border-red-500' : ''
         )}
       >

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { Pressable, Text, ActivityIndicator, ViewStyle } from 'react-native';
 import { cn } from './utils';
 
 export interface ButtonProps {
@@ -32,7 +32,7 @@ export function Button({
   const getVariantStyles = () => {
     switch (variant) {
       case 'emerald':
-        return 'bg-emerald-600 active:bg-emerald-700 text-white shadow-sm';
+        return 'bg-[#58c763] active:bg-[#48b352] text-white shadow-sm';
       case 'destructive':
         return 'bg-red-600 active:bg-red-700 text-white shadow-sm';
       case 'outline':
@@ -42,10 +42,10 @@ export function Button({
       case 'ghost':
         return 'bg-transparent active:bg-gray-100 text-gray-900';
       case 'link':
-        return 'bg-transparent underline-offset-4 text-emerald-600';
+        return 'bg-transparent underline-offset-4 text-[#58c763]';
       case 'default':
       default:
-        return 'bg-emerald-600 active:bg-emerald-700 text-white shadow-sm';
+        return 'bg-[#58c763] active:bg-[#48b352] text-white shadow-sm';
     }
   };
 
@@ -56,7 +56,7 @@ export function Button({
       case 'ghost':
         return 'text-gray-900 font-semibold';
       case 'link':
-        return 'text-emerald-600 underline font-semibold';
+        return 'text-[#58c763] underline font-semibold';
       case 'destructive':
       case 'emerald':
       case 'default':
