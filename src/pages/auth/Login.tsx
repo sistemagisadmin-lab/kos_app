@@ -16,7 +16,6 @@ import {
   Eye,
   EyeOff,
   LogIn,
-  Sparkles,
   ShieldCheck,
   User,
   KeyRound,
@@ -79,90 +78,70 @@ export default function LoginPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFFDF0]">
+    <SafeAreaView className="flex-1 bg-[#F9FAFB]">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, padding: 20, justifyContent: 'center' }}
+          contentContainerStyle={{ flexGrow: 1, padding: 24, justifyContent: 'center' }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Header Brand Section */}
           <View className="items-center mb-6">
-            <View
-              style={{
-                borderWidth: 3,
-                borderColor: '#000000',
-                boxShadow: '4px 4px 0px 0px #000000',
-                backgroundColor: '#A6FA37',
-              }}
-              className="w-20 h-20 items-center justify-center mb-3"
-            >
-              <Building2 size={42} color="#000000" strokeWidth={2.5} />
+            <View className="w-16 h-16 rounded-2xl bg-emerald-100 items-center justify-center mb-3 shadow-xs border border-emerald-200/50">
+              <Building2 size={36} color="#059669" strokeWidth={2} />
             </View>
 
-            <View className="flex-row items-center gap-2 mb-1">
-              <Badge variant="pink" label="v1.0" />
-              <Badge variant="cyan" label="Sistem Kos Pintar" />
+            <View className="flex-row items-center gap-1.5 mb-2">
+              <Badge variant="secondary" label="v1.0" />
+              <Badge variant="success" label="Sistem Kos Pintar" />
             </View>
 
-            <Text className="text-3xl font-black text-black tracking-tight text-center uppercase mt-1">
-              KOS-APP
+            <Text className="text-2xl font-bold text-gray-900 tracking-tight text-center">
+              Selamat Datang Kembali
             </Text>
-            <Text className="text-xs font-bold text-gray-700 text-center uppercase tracking-wide">
-              Manajemen Hunian & Tagihan Kos Tanpa Ribet
+            <Text className="text-xs font-normal text-gray-500 text-center mt-1">
+              Masuk ke akun Kos-App Anda untuk melanjutkan
             </Text>
           </View>
 
           {/* Main Card */}
-          <Card accentColor="#FFFFFF" className="mb-4">
+          <Card className="mb-4">
             {/* Role Selection Switcher */}
-            <Text className="text-xs font-black uppercase tracking-wider text-black mb-2">
-              Pilih Peran Masuk:
+            <Text className="text-xs font-semibold text-gray-700 mb-2">
+              Masuk Sebagai:
             </Text>
-            <View className="flex-row gap-2 mb-5">
+            <View className="flex-row gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
               <Pressable
                 onPress={() => setRole('tenant')}
-                style={({ pressed }) => [
-                  {
-                    borderWidth: 2.5,
-                    borderColor: '#000000',
-                    boxShadow:
-                      role === 'tenant'
-                        ? '3px 3px 0px 0px #000000'
-                        : '1px 1px 0px 0px #000000',
-                    backgroundColor: role === 'tenant' ? '#FFDE59' : '#FFFFFF',
-                    transform: pressed ? [{ translateX: 1 }, { translateY: 1 }] : [],
-                  },
-                ]}
-                className="flex-1 py-2.5 px-2 items-center justify-center flex-row gap-1.5"
+                className={`flex-1 py-2 rounded-lg items-center justify-center flex-row gap-1.5 transition-all ${
+                  role === 'tenant' ? 'bg-white shadow-xs' : 'bg-transparent'
+                }`}
               >
-                <User size={16} color="#000000" strokeWidth={2.5} />
-                <Text className="text-xs font-black uppercase text-black">
+                <User size={15} color={role === 'tenant' ? '#059669' : '#6B7280'} />
+                <Text
+                  className={`text-xs font-semibold ${
+                    role === 'tenant' ? 'text-gray-900' : 'text-gray-500'
+                  }`}
+                >
                   Anak Kos
                 </Text>
               </Pressable>
 
               <Pressable
                 onPress={() => setRole('owner')}
-                style={({ pressed }) => [
-                  {
-                    borderWidth: 2.5,
-                    borderColor: '#000000',
-                    boxShadow:
-                      role === 'owner'
-                        ? '3px 3px 0px 0px #000000'
-                        : '1px 1px 0px 0px #000000',
-                    backgroundColor: role === 'owner' ? '#00F0FF' : '#FFFFFF',
-                    transform: pressed ? [{ translateX: 1 }, { translateY: 1 }] : [],
-                  },
-                ]}
-                className="flex-1 py-2.5 px-2 items-center justify-center flex-row gap-1.5"
+                className={`flex-1 py-2 rounded-lg items-center justify-center flex-row gap-1.5 transition-all ${
+                  role === 'owner' ? 'bg-white shadow-xs' : 'bg-transparent'
+                }`}
               >
-                <KeyRound size={16} color="#000000" strokeWidth={2.5} />
-                <Text className="text-xs font-black uppercase text-black">
+                <KeyRound size={15} color={role === 'owner' ? '#059669' : '#6B7280'} />
+                <Text
+                  className={`text-xs font-semibold ${
+                    role === 'owner' ? 'text-gray-900' : 'text-gray-500'
+                  }`}
+                >
                   Pemilik Kos
                 </Text>
               </Pressable>
@@ -179,14 +158,14 @@ export default function LoginPage() {
               }}
               autoCapitalize="none"
               keyboardType="email-address"
-              icon={<Mail size={18} color="#000000" />}
+              icon={<Mail size={16} color="#6B7280" />}
               error={errors.email}
             />
 
             {/* Password Input */}
             <Input
               label="Kata Sandi"
-              placeholder="Masukkan password"
+              placeholder="Masukkan kata sandi"
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
@@ -194,13 +173,13 @@ export default function LoginPage() {
                   setErrors((prev) => ({ ...prev, password: undefined }));
               }}
               secureTextEntry={!showPassword}
-              icon={<Lock size={18} color="#000000" />}
+              icon={<Lock size={16} color="#6B7280" />}
               rightIcon={
                 <Pressable onPress={() => setShowPassword((prev) => !prev)}>
                   {showPassword ? (
-                    <EyeOff size={18} color="#000000" />
+                    <EyeOff size={16} color="#6B7280" />
                   ) : (
-                    <Eye size={18} color="#000000" />
+                    <Eye size={16} color="#6B7280" />
                   )}
                 </Pressable>
               }
@@ -214,50 +193,50 @@ export default function LoginPage() {
                 className="flex-row items-center gap-2"
               >
                 <View
-                  style={{
-                    borderWidth: 2,
-                    borderColor: '#000000',
-                    backgroundColor: rememberMe ? '#A6FA37' : '#FFFFFF',
-                  }}
-                  className="w-5 h-5 items-center justify-center"
+                  className={`w-4 h-4 rounded border items-center justify-center ${
+                    rememberMe
+                      ? 'bg-emerald-600 border-emerald-600'
+                      : 'border-gray-300 bg-white'
+                  }`}
                 >
                   {rememberMe && (
-                    <Text className="text-xs font-black text-black">✓</Text>
+                    <Text className="text-[10px] font-bold text-white leading-none">
+                      ✓
+                    </Text>
                   )}
                 </View>
-                <Text className="text-xs font-bold text-black uppercase">
-                  Ingat Saya
-                </Text>
+                <Text className="text-xs font-medium text-gray-700">Ingat Saya</Text>
               </Pressable>
 
               <Pressable
                 onPress={() =>
                   Alert.alert(
                     'Lupa Password',
-                    'Fitur reset password akan mengirimkan tautan reset ke email / WhatsApp Anda.'
+                    'Fitur reset password akan mengirimkan tautan reset ke email Anda.'
                   )
                 }
               >
-                <Text className="text-xs font-black text-black uppercase underline">
-                  Lupa Password?
+                <Text className="text-xs font-semibold text-emerald-600">
+                  Lupa Kata Sandi?
                 </Text>
               </Pressable>
             </View>
 
             {/* Login Button */}
             <Button
-              title="MASUK SEKARANG"
-              variant="lime"
+              title="Masuk Sekarang"
+              variant="default"
               size="lg"
+              className="w-full bg-emerald-600"
               onPress={handleLogin}
               loading={isLoading}
-              icon={<LogIn size={20} color="#000000" strokeWidth={3} />}
+              icon={<LogIn size={18} color="#FFFFFF" />}
             />
 
             {/* Demo Quick Fill */}
-            <View className="mt-5 pt-3 border-t-2 border-dashed border-gray-300">
-              <Text className="text-[10px] font-extrabold uppercase text-gray-600 text-center mb-2">
-                ⚡ Akun Demo Cepat (Klik untuk Uji Coba):
+            <View className="mt-4 pt-4 border-t border-gray-100">
+              <Text className="text-[11px] font-medium text-gray-400 text-center mb-2">
+                ⚡ Akun Uji Coba Cepat:
               </Text>
               <View className="flex-row gap-2">
                 <Button
@@ -269,7 +248,7 @@ export default function LoginPage() {
                 />
                 <Button
                   title="Demo Pemilik"
-                  variant="cyan"
+                  variant="secondary"
                   size="sm"
                   className="flex-1"
                   onPress={() => handleQuickDemo('owner')}
@@ -281,9 +260,7 @@ export default function LoginPage() {
           {/* Footer Register Link */}
           <View className="items-center mt-2">
             <View className="flex-row items-center justify-center gap-1 mb-3">
-              <Text className="text-xs font-bold text-gray-800">
-                Belum punya akun?
-              </Text>
+              <Text className="text-xs text-gray-500">Belum punya akun?</Text>
               <Pressable
                 onPress={() =>
                   Alert.alert(
@@ -292,16 +269,16 @@ export default function LoginPage() {
                   )
                 }
               >
-                <Text className="text-xs font-black text-black underline uppercase">
+                <Text className="text-xs font-semibold text-emerald-600">
                   Daftar Sekarang
                 </Text>
               </Pressable>
             </View>
 
-            <View className="flex-row items-center gap-1 bg-[#FFDE59] px-3 py-1 border-2 border-black">
-              <ShieldCheck size={14} color="#000000" strokeWidth={2.5} />
-              <Text className="text-[10px] font-black uppercase text-black">
-                Terlindungi Enkripsi Keamanan End-to-End
+            <View className="flex-row items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200/60">
+              <ShieldCheck size={13} color="#059669" />
+              <Text className="text-[10px] font-medium text-gray-500">
+                Terlindungi Enkripsi Keamanan
               </Text>
             </View>
           </View>

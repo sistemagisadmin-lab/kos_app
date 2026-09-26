@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { View, TextInput, Text, TextInputProps, ViewStyle } from "react-native";
-import { cn } from "./utils";
+import React, { useState } from 'react';
+import { View, TextInput, Text, TextInputProps, ViewStyle } from 'react-native';
+import { cn } from './utils';
 
 export interface InputProps extends TextInputProps {
   label?: string;
@@ -26,24 +26,20 @@ export function Input({
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <View className={cn("my-2 w-full", containerClassName)} style={containerStyle}>
+    <View className={cn('w-full my-1.5', containerClassName)} style={containerStyle}>
       {label && (
-        <Text className="text-xs font-black text-black uppercase tracking-wider mb-1">
-          {label}
-        </Text>
+        <Text className="text-sm font-medium text-gray-700 mb-1.5">{label}</Text>
       )}
       <View
-        style={{
-          borderWidth: 3,
-          borderColor: "#000000",
-          boxShadow: isFocused ? "4px 4px 0px 0px #A6FA37" : "3px 3px 0px 0px #000000",
-          backgroundColor: "#FFFFFF",
-        }}
-        className="flex-row items-center px-3 py-2.5 w-full"
+        className={cn(
+          'flex-row items-center h-12 w-full rounded-xl border bg-white px-3.5 transition-all shadow-sm',
+          isFocused ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-200',
+          error ? 'border-red-500' : ''
+        )}
       >
-        {icon && <View className="mr-2">{icon}</View>}
+        {icon && <View className="mr-2.5">{icon}</View>}
         <TextInput
-          placeholderTextColor="#737373"
+          placeholderTextColor="#9CA3AF"
           onFocus={(e) => {
             setIsFocused(true);
             onFocus && onFocus(e);
@@ -52,16 +48,12 @@ export function Input({
             setIsFocused(false);
             onBlur && onBlur(e);
           }}
-          className={cn("flex-1 text-base font-bold text-black p-0", className)}
+          className={cn('flex-1 text-sm text-gray-900 font-normal p-0 h-full', className)}
           {...props}
         />
-        {rightIcon && <View className="ml-2">{rightIcon}</View>}
+        {rightIcon && <View className="ml-2.5">{rightIcon}</View>}
       </View>
-      {error && (
-        <Text className="text-xs font-black text-red-600 uppercase mt-1">
-          ⚠️ {error}
-        </Text>
-      )}
+      {error && <Text className="text-xs text-red-500 mt-1 font-medium">{error}</Text>}
     </View>
   );
 }

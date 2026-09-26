@@ -1,13 +1,13 @@
-import React from "react";
-import { Pressable, Text, ActivityIndicator, ViewStyle } from "react-native";
-import { cn } from "./utils";
+import React from 'react';
+import { Pressable, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { cn } from './utils';
 
 export interface ButtonProps {
   children?: React.ReactNode;
   title?: string;
   onPress?: () => void;
-  variant?: "default" | "lime" | "pink" | "cyan" | "orange" | "dark" | "outline";
-  size?: "sm" | "md" | "lg";
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'emerald';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
   disabled?: boolean;
   loading?: boolean;
   className?: string;
@@ -20,8 +20,8 @@ export function Button({
   children,
   title,
   onPress,
-  variant = "default",
-  size = "md",
+  variant = 'default',
+  size = 'default',
   disabled = false,
   loading = false,
   className,
@@ -31,50 +31,63 @@ export function Button({
 }: ButtonProps) {
   const getVariantStyles = () => {
     switch (variant) {
-      case "lime":
-        return "bg-[#A6FA37]";
-      case "pink":
-        return "bg-[#FF66C4]";
-      case "cyan":
-        return "bg-[#00F0FF]";
-      case "orange":
-        return "bg-[#FF914D]";
-      case "dark":
-        return "bg-black";
-      case "outline":
-        return "bg-white";
-      case "default":
+      case 'emerald':
+        return 'bg-emerald-600 active:bg-emerald-700 text-white shadow-sm';
+      case 'destructive':
+        return 'bg-red-600 active:bg-red-700 text-white shadow-sm';
+      case 'outline':
+        return 'border border-gray-200 bg-white active:bg-gray-50 text-gray-900 shadow-sm';
+      case 'secondary':
+        return 'bg-gray-100 active:bg-gray-200 text-gray-900';
+      case 'ghost':
+        return 'bg-transparent active:bg-gray-100 text-gray-900';
+      case 'link':
+        return 'bg-transparent underline-offset-4 text-emerald-600';
+      case 'default':
       default:
-        return "bg-[#FFDE59]";
+        return 'bg-emerald-600 active:bg-emerald-700 text-white shadow-sm';
     }
   };
 
   const getTextVariantStyles = () => {
-    if (variant === "dark") return "text-white";
-    return "text-black font-extrabold";
+    switch (variant) {
+      case 'outline':
+      case 'secondary':
+      case 'ghost':
+        return 'text-gray-900 font-semibold';
+      case 'link':
+        return 'text-emerald-600 underline font-semibold';
+      case 'destructive':
+      case 'emerald':
+      case 'default':
+      default:
+        return 'text-white font-semibold';
+    }
   };
 
   const getSizeStyles = () => {
     switch (size) {
-      case "sm":
-        return "px-3 py-1.5 min-h-[36px]";
-      case "lg":
-        return "px-6 py-4 min-h-[56px]";
-      case "md":
+      case 'sm':
+        return 'h-9 px-3 rounded-lg';
+      case 'lg':
+        return 'h-12 px-6 rounded-xl';
+      case 'icon':
+        return 'h-10 w-10 rounded-lg p-0 items-center justify-center';
+      case 'default':
       default:
-        return "px-4 py-3 min-h-[46px]";
+        return 'h-11 px-4 rounded-xl';
     }
   };
 
   const getTextSizeStyles = () => {
     switch (size) {
-      case "sm":
-        return "text-xs font-black uppercase tracking-wider";
-      case "lg":
-        return "text-lg font-black uppercase tracking-wider";
-      case "md":
+      case 'sm':
+        return 'text-xs';
+      case 'lg':
+        return 'text-base';
+      case 'default':
       default:
-        return "text-base font-black uppercase tracking-wider";
+        return 'text-sm';
     }
   };
 
@@ -84,28 +97,35 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         {
-          borderWidth: 3,
-          borderColor: "#000000",
-          boxShadow: pressed ? "1px 1px 0px 0px #000000" : "4px 4px 0px 0px #000000",
-          transform: pressed ? [{ translateX: 3 }, { translateY: 3 }] : [],
-          opacity: disabled ? 0.6 : 1,
+          opacity: disabled ? 0.5 : pressed ? 0.92 : 1,
+          transform: pressed && !disabled ? [{ scale: 0.98 }] : [{ scale: 1 }],
         },
         style,
       ]}
       className={cn(
-        "flex-row items-center justify-center rounded-none border-black",
+        'flex-row items-center justify-center transition-all',
         getVariantStyles(),
         getSizeStyles(),
         className
       )}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "dark" ? "#FFFFFF" : "#000000"} />
+        <ActivityIndicator
+          size="small"
+          color={variant === 'outline' || variant === 'secondary' || variant === 'ghost' ? '#111827' : '#FFFFFF'}
+        />
       ) : (
         <>
           {icon && <React.Fragment>{icon}</React.Fragment>}
           {title ? (
-            <Text className={cn(getTextVariantStyles(), getTextSizeStyles(), icon ? "ml-2" : "", textClassName)}>
+            <Text
+              className={cn(
+                getTextVariantStyles(),
+                getTextSizeStyles(),
+                icon ? 'ml-2' : '',
+                textClassName
+              )}
+            >
               {title}
             </Text>
           ) : (

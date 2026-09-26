@@ -1,54 +1,64 @@
-import React from "react";
-import { View, Text, Image } from "react-native";
-import { cn } from "./utils";
+import React from 'react';
+import { View, Text, Image, ImageSourcePropType } from 'react-native';
+import { cn } from './utils';
 
 export interface AvatarProps {
   sourceUrl?: string;
+  source?: ImageSourcePropType;
   fallbackText?: string;
-  size?: "sm" | "md" | "lg";
-  bgColor?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-export function Avatar({ sourceUrl, fallbackText = "U", size = "md", bgColor = "#FFDE59", className }: AvatarProps) {
+export function Avatar({
+  sourceUrl,
+  source,
+  fallbackText = 'U',
+  size = 'md',
+  className,
+}: AvatarProps) {
   const getSizeStyles = () => {
     switch (size) {
-      case "sm":
-        return "w-8 h-8";
-      case "lg":
-        return "w-16 h-16";
-      case "md":
+      case 'sm':
+        return 'w-8 h-8';
+      case 'lg':
+        return 'w-14 h-14';
+      case 'xl':
+        return 'w-20 h-20';
+      case 'md':
       default:
-        return "w-12 h-12";
+        return 'w-10 h-10';
     }
   };
 
   const getTextSize = () => {
     switch (size) {
-      case "sm":
-        return "text-xs";
-      case "lg":
-        return "text-2xl";
-      case "md":
+      case 'sm':
+        return 'text-xs';
+      case 'lg':
+        return 'text-lg';
+      case 'xl':
+        return 'text-2xl';
+      case 'md':
       default:
-        return "text-lg";
+        return 'text-sm';
     }
   };
 
+  const imageSrc = source || (sourceUrl ? { uri: sourceUrl } : undefined);
+
   return (
     <View
-      style={{
-        borderWidth: 3,
-        borderColor: "#000000",
-        boxShadow: "2px 2px 0px 0px #000000",
-        backgroundColor: bgColor,
-      }}
-      className={cn("items-center justify-center overflow-hidden", getSizeStyles(), className)}
+      className={cn(
+        'relative flex shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-100 items-center justify-center',
+        getSizeStyles(),
+        className
+      )}
     >
-      {sourceUrl ? (
-        <Image source={{ uri: sourceUrl }} className="w-full h-full" resizeMode="cover" />
+      {imageSrc ? (
+        <Image source={imageSrc} className="w-full h-full" resizeMode="cover" />
       ) : (
-        <Text className={cn("font-black text-black uppercase", getTextSize())}>
+        <Text className={cn('font-semibold text-gray-700 uppercase', getTextSize())}>
           {fallbackText.substring(0, 2)}
         </Text>
       )}

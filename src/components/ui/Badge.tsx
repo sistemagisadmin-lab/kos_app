@@ -1,54 +1,62 @@
-import React from "react";
-import { View, Text, ViewStyle } from "react-native";
-import { cn } from "./utils";
+import React from 'react';
+import { View, Text, ViewStyle } from 'react-native';
+import { cn } from './utils';
 
 export interface BadgeProps {
   children?: React.ReactNode;
   label?: string;
-  variant?: "yellow" | "lime" | "pink" | "cyan" | "orange" | "dark" | "outline";
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'success';
   className?: string;
   style?: ViewStyle;
 }
 
-export function Badge({ children, label, variant = "yellow", className, style }: BadgeProps) {
-  const getVariantBg = () => {
+export function Badge({
+  children,
+  label,
+  variant = 'default',
+  className,
+  style,
+}: BadgeProps) {
+  const getVariantStyles = () => {
     switch (variant) {
-      case "lime":
-        return "bg-[#A6FA37]";
-      case "pink":
-        return "bg-[#FF66C4]";
-      case "cyan":
-        return "bg-[#00F0FF]";
-      case "orange":
-        return "bg-[#FF914D]";
-      case "dark":
-        return "bg-black";
-      case "outline":
-        return "bg-white";
-      case "yellow":
+      case 'secondary':
+        return 'bg-gray-100 border-transparent text-gray-900';
+      case 'destructive':
+        return 'bg-red-500 border-transparent text-white';
+      case 'outline':
+        return 'bg-transparent border border-gray-200 text-gray-900';
+      case 'success':
+        return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+      case 'default':
       default:
-        return "bg-[#FFDE59]";
+        return 'bg-emerald-600 border-transparent text-white';
     }
   };
 
   const getTextColor = () => {
-    if (variant === "dark") return "text-white";
-    return "text-black";
+    switch (variant) {
+      case 'secondary':
+      case 'outline':
+        return 'text-gray-800';
+      case 'success':
+        return 'text-emerald-700';
+      case 'destructive':
+      case 'default':
+      default:
+        return 'text-white';
+    }
   };
 
   return (
     <View
-      style={[
-        {
-          borderWidth: 2,
-          borderColor: "#000000",
-          boxShadow: "2px 2px 0px 0px #000000",
-        },
-        style,
-      ]}
-      className={cn("px-2.5 py-1 flex-row items-center self-start", getVariantBg(), className)}
+      style={style}
+      className={cn(
+        'inline-flex flex-row items-center rounded-full border px-2.5 py-0.5 self-start',
+        getVariantStyles(),
+        className
+      )}
     >
-      <Text className={cn("text-xs font-black uppercase tracking-wider", getTextColor())}>
+      <Text className={cn('text-xs font-semibold', getTextColor())}>
         {label || children}
       </Text>
     </View>

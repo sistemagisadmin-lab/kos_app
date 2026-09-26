@@ -1,5 +1,5 @@
-import LoginPage from '@/pages/auth/Login';
+import GetStartedScreen from '@/pages/onboarding/GetStarted';
 
 export default function EntryScreen() {
-  return <LoginPage />;
+  return <GetStartedScreen />;
 }
