@@ -1,65 +1,66 @@
-import { SymbolView } from 'expo-symbols';
-import { PropsWithChildren, useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import React, { PropsWithChildren, useState } from 'react';
+import { Pressable, Text, View, ViewStyle } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { cn } from './utils';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const theme = useTheme();
-
-  return (
-    <ThemedView>
-      <Pressable
-        style={({ pressed }) => [styles.heading, pressed && styles.pressedHeading]}
-        onPress={() => setIsOpen((value) => !value)}>
-        <ThemedView type="backgroundElement" style={styles.button}>
-          <SymbolView
-            name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
-            size={14}
-            weight="bold"
-            tintColor={theme.text}
-            style={{ transform: [{ rotate: isOpen ? '-90deg' : '90deg' }] }}
-          />
-        </ThemedView>
-
-        <ThemedText type="small">{title}</ThemedText>
-      </Pressable>
-      {isOpen && (
-        <Animated.View entering={FadeIn.duration(200)}>
-          <ThemedView type="backgroundElement" style={styles.content}>
-            {children}
-          </ThemedView>
-        </Animated.View>
-      )}
-    </ThemedView>
-  );
+export interface CollapsibleProps extends PropsWithChildren {
+  title: string;
+  className?: string;
+  contentClassName?: string;
+  style?: ViewStyle;
+  defaultOpen?: boolean;
 }
 
-const styles = StyleSheet.create({
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  pressedHeading: {
-    opacity: 0.7,
-  },
-  button: {
-    width: Spacing.four,
-    height: Spacing.four,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    marginTop: Spacing.three,
-    borderRadius: Spacing.three,
-    marginLeft: Spacing.four,
-    padding: Spacing.four,
-  },
-});
+export function Collapsible({
+  children,
+  title,
+  className,
+  contentClassName,
+  style,
+  defaultOpen = false,
+}: CollapsibleProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <View className={cn('my-2 w-full', className)} style={style}>
+      <Pressable
+        onPress={() => setIsOpen((value) => !value)}
+        style={({ pressed }) => [
+          {
+            borderWidth: 3,
+            borderColor: '#000000',
+            boxShadow: pressed ? '1px 1px 0px 0px #000000' : '3px 3px 0px 0px #000000',
+            transform: pressed ? [{ translateX: 2 }, { translateY: 2 }] : [],
+          },
+        ]}
+        className="flex-row items-center justify-between bg-white px-4 py-3"
+      >
+        <Text className="text-base font-black uppercase text-black">{title}</Text>
+        <View
+          style={{
+            transform: [{ rotate: isOpen ? '90deg' : '0deg' }],
+          }}
+        >
+          <ChevronRight size={20} color="#000000" strokeWidth={3} />
+        </View>
+      </Pressable>
+
+      {isOpen && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          style={{
+            borderLeftWidth: 3,
+            borderRightWidth: 3,
+            borderBottomWidth: 3,
+            borderColor: '#000000',
+            backgroundColor: '#F0F0F3',
+          }}
+          className={cn('p-4', contentClassName)}
+        >
+          {children}
+        </Animated.View>
+      )}
+    </View>
+  );
+}

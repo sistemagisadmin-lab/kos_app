@@ -1,6 +1,8 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "expo/tsconfig.base.json",
   "compilerOptions": {
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
     "strict": true,
     "paths": {
       "@/*": [
@@ -15,6 +17,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
   ]
 }
