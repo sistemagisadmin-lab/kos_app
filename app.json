@@ -7,15 +7,30 @@
     "icon": "./assets/images/icon.png",
     "scheme": "kosapp",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/logo/logomagis.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "splash": {
+        "image": "./assets/logo/logomagis.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "splash": {
+        "image": "./assets/logo/logomagis.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -28,9 +43,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/logo/logomagis.png",
+          "imageWidth": 180
         }
       ],
       "expo-font",

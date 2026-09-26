@@ -42,7 +42,11 @@ const slides: OnboardingSlide[] = [
   },
 ];
 
-export default function GetStartedScreen() {
+interface GetStartedProps {
+  onFinish?: () => void;
+}
+
+export default function GetStartedScreen({ onFinish }: GetStartedProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const isLastSlide = currentIndex === slides.length - 1;
@@ -51,12 +55,18 @@ export default function GetStartedScreen() {
     if (!isLastSlide) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      alert('Selamat datang di Kos-App!');
+      if (onFinish) {
+        onFinish();
+      }
     }
   };
 
   const handleSkip = () => {
-    setCurrentIndex(slides.length - 1);
+    if (onFinish) {
+      onFinish();
+    } else {
+      setCurrentIndex(slides.length - 1);
+    }
   };
 
   const currentSlide = slides[currentIndex];
@@ -65,25 +75,18 @@ export default function GetStartedScreen() {
     <SafeAreaView className="flex-1 bg-white justify-between">
       {/* Top Header - Skip Button */}
       <View className="flex-row justify-end px-6 pt-2">
-        {!isLastSlide ? (
-          <Pressable
-            onPress={handleSkip}
-            className="py-1.5 px-3 rounded-full active:bg-gray-100"
-          >
-            <Text className="text-sm font-medium text-gray-400">Lewati</Text>
-          </Pressable>
-        ) : (
-          <View className="h-8" />
-        )}
+        <Pressable
+          onPress={handleSkip}
+          className="py-1.5 px-3 rounded-full active:bg-gray-100"
+        >
+          <Text className="text-sm font-medium text-gray-400">Lewati</Text>
+        </Pressable>
       </View>
 
       {/* Main Content Area */}
       <View className="items-center px-6 flex-1 justify-center">
-        {/* Illustration Container Box with #58c763 accents */}
-        <View
-          style={{ backgroundColor: '#F3FBF4', borderColor: '#58c76320' }}
-          className="w-full max-w-[320px] aspect-square rounded-3xl items-center justify-center p-6 mb-8 border shadow-sm"
-        >
+        {/* Illustration Container Box with Clean Pure White */}
+        <View className="w-full max-w-[320px] aspect-square rounded-3xl items-center justify-center p-6 mb-8 border border-gray-100 bg-white shadow-sm">
           {currentSlide.imageSource ? (
             <Image
               source={currentSlide.imageSource}
@@ -145,6 +148,7 @@ export default function GetStartedScreen() {
           variant="default"
           size="lg"
           style={{ backgroundColor: '#58c763' }}
+          textStyle={{ color: '#FFFFFF' }}
           className="w-full h-14 rounded-2xl shadow-md"
           textClassName="text-base font-bold text-white tracking-wide"
           onPress={handleNext}

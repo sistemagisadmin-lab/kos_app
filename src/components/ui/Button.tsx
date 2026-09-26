@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, ActivityIndicator, ViewStyle } from 'react-native';
+import { Pressable, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { cn } from './utils';
 
 export interface ButtonProps {
@@ -14,6 +14,7 @@ export interface ButtonProps {
   textClassName?: string;
   icon?: React.ReactNode;
   style?: ViewStyle;
+  textStyle?: TextStyle;
 }
 
 export function Button({
@@ -28,6 +29,7 @@ export function Button({
   textClassName,
   icon,
   style,
+  textStyle,
 }: ButtonProps) {
   const getVariantStyles = () => {
     switch (variant) {
@@ -119,6 +121,7 @@ export function Button({
           {icon && <React.Fragment>{icon}</React.Fragment>}
           {title ? (
             <Text
+              style={textStyle}
               className={cn(
                 getTextVariantStyles(),
                 getTextSizeStyles(),
