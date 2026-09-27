@@ -50,6 +50,7 @@ export interface KosRoomType {
   size: string;
   totalUnits: number;
   image?: string;
+  images?: string[];
   facilities: string[];
 }
 

@@ -23,11 +23,13 @@ import KamarMitra, {
   RoomItem,
   initialRooms,
 } from './KamarMitra';
+import * as ImagePicker from 'expo-image-picker';
 import {
   User,
   Bell,
   SlidersHorizontal,
   ChevronDown,
+  ChevronUp,
   TrendingUp,
   TrendingDown,
   Search,
@@ -63,6 +65,8 @@ import {
   Image as ImageIcon,
   ArrowLeft,
   Sparkles,
+  Camera,
+  UploadCloud,
 } from 'lucide-react-native';
 import CustomAlertModal, { AlertType } from '../../components/CustomAlertModal';
 
@@ -544,64 +548,6 @@ export default function DashboardMitra({
   // Sub-view in Tab Akun: 'profile' (default) | 'tambah_kos' (form lengkap tambah kos & tipe kamar)
   const [akunView, setAkunView] = useState<'profile' | 'tambah_kos'>('profile');
 
-  // Sample Building Images (Fasad & Bangunan Kos)
-  const sampleBuildingImages = [
-    {
-      id: 'bld-1',
-      label: 'Modern Tropis',
-      url: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'bld-2',
-      label: 'Townhouse Dago',
-      url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'bld-3',
-      label: 'Minimalis Asri',
-      url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'bld-4',
-      label: 'Luxury Residence',
-      url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'bld-5',
-      label: 'Urban Modern',
-      url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
-    },
-  ];
-
-  // Sample Room Images (Foto Interior Tipe Kamar)
-  const sampleRoomImages = [
-    {
-      id: 'rm-1',
-      label: 'Deluxe Queen',
-      url: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'rm-2',
-      label: 'VIP Suite Study',
-      url: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'rm-3',
-      label: 'Standar Single',
-      url: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'rm-4',
-      label: 'Studio Smart TV',
-      url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'rm-5',
-      label: 'Warm Wooden Room',
-      url: 'https://images.unsplash.com/photo-1540518614846-7ede433c4550?w=800&auto=format&fit=crop&q=80',
-    },
-  ];
-
   const allAvailableFacilities = [
     'AC',
     'KM Dalam',
@@ -625,62 +571,73 @@ export default function DashboardMitra({
   const [newKosType, setNewKosType] = useState<'Campur' | 'Putra' | 'Putri'>('Campur');
   const [newKosManagerName, setNewKosManagerName] = useState('Bambang Supriyadi');
   const [newKosManagerPhone, setNewKosManagerPhone] = useState('081234567890');
-  const [newKosImageUrl, setNewKosImageUrl] = useState(sampleBuildingImages[0].url);
+  const [newKosImageUrl, setNewKosImageUrl] = useState<string | null>(null);
 
   // Dynamic Room Types in Form (Bisa tambah banyak tipe kamar)
-  const [newKosRoomTypes, setNewKosRoomTypes] = useState<{
+  interface FormRoomType {
     id: string;
     name: string;
     price: string;
     size: string;
     totalUnits: string;
-    image: string;
+    images: string[];
     facilities: string[];
-  }[]>([
-    {
-      id: 'rt-init-1',
-      name: 'Tipe Standar',
-      price: '1200000',
-      size: '3x3 m',
-      totalUnits: '4',
-      image: sampleRoomImages[2].url,
-      facilities: ['Kipas Angin', 'KM Dalam', 'WiFi', 'Kasur Single', 'Lemari Pakaian'],
-    },
-    {
-      id: 'rt-init-2',
-      name: 'Tipe Deluxe',
-      price: '1600000',
-      size: '3.5x4 m',
-      totalUnits: '4',
-      image: sampleRoomImages[0].url,
-      facilities: ['AC', 'KM Dalam', 'WiFi', 'Kasur Queen', 'Lemari Pakaian', 'Meja Belajar'],
-    },
-  ]);
+    isExpanded: boolean;
+  }
+
+  const [newKosRoomTypes, setNewKosRoomTypes] = useState<FormRoomType[]>([]);
+
+  // Function to pick main building image from phone gallery
+  const handlePickBuildingImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        showAlert('Izin Diperlukan', 'Mohon izinkan akses galeri foto pada perangkat Anda.', 'warning');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.85,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setNewKosImageUrl(result.assets[0].uri);
+      }
+    } catch (error) {
+      showAlert('Gagal Membuka Galeri', 'Terjadi kesalahan saat memilih foto.', 'error');
+    }
+  };
+
+  const handleRemoveBuildingImage = () => {
+    setNewKosImageUrl(null);
+  };
 
   const handleAddRoomTypeDraft = () => {
     const newIdx = newKosRoomTypes.length + 1;
-    const sampleImg = sampleRoomImages[(newIdx - 1) % sampleRoomImages.length].url;
-    const newTypeDraft = {
-      id: 'rt-draft-' + Date.now(),
-      name: newIdx === 3 ? 'Tipe VIP' : newIdx === 4 ? 'Tipe Executive' : `Tipe Kamar ${newIdx}`,
-      price: newIdx === 3 ? '2200000' : '1500000',
-      size: '4x4 m',
-      totalUnits: '2',
-      image: sampleImg,
-      facilities: ['AC', 'KM Dalam', 'Water Heater', 'WiFi', 'Kasur Queen', 'Lemari Pakaian', 'Meja Belajar'],
+    const newTypeDraft: FormRoomType = {
+      id: 'rt-draft-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      name: newIdx === 1 ? 'Tipe Standar' : newIdx === 2 ? 'Tipe Deluxe' : newIdx === 3 ? 'Tipe VIP' : `Tipe Kamar ${newIdx}`,
+      price: newIdx === 1 ? '1200000' : newIdx === 2 ? '1600000' : '2200000',
+      size: newIdx === 1 ? '3x3 m' : '3.5x4 m',
+      totalUnits: '4',
+      images: [],
+      facilities: ['AC', 'KM Dalam', 'WiFi', 'Kasur Single', 'Lemari Pakaian'],
+      isExpanded: true,
     };
     setNewKosRoomTypes([...newKosRoomTypes, newTypeDraft]);
   };
 
+  const handleToggleExpandRoomType = (id: string) => {
+    setNewKosRoomTypes(
+      newKosRoomTypes.map((t) => (t.id === id ? { ...t, isExpanded: !t.isExpanded } : t))
+    );
+  };
+
   const handleRemoveRoomTypeDraft = (id: string) => {
-    if (newKosRoomTypes.length <= 1) {
-      showAlert('Perhatian', 'Minimal harus ada 1 tipe kamar untuk kosan ini.', 'warning');
-      return;
-    }
     setNewKosRoomTypes(newKosRoomTypes.filter((t) => t.id !== id));
   };
 
-  const handleUpdateRoomTypeDraft = (id: string, field: string, value: any) => {
+  const handleUpdateRoomTypeDraft = (id: string, field: keyof FormRoomType, value: any) => {
     setNewKosRoomTypes(
       newKosRoomTypes.map((t) => (t.id === id ? { ...t, [field]: value } : t))
     );
@@ -699,6 +656,45 @@ export default function DashboardMitra({
     );
   };
 
+  const handlePickRoomTypeImages = async (typeId: string) => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        showAlert('Izin Diperlukan', 'Mohon izinkan akses galeri foto pada perangkat Anda.', 'warning');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.85,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const uris = result.assets.map((a) => a.uri);
+        setNewKosRoomTypes(
+          newKosRoomTypes.map((t) => {
+            if (t.id !== typeId) return t;
+            return {
+              ...t,
+              images: [...t.images, ...uris],
+            };
+          })
+        );
+      }
+    } catch (error) {
+      showAlert('Gagal Membuka Galeri', 'Terjadi kesalahan saat memilih foto.', 'error');
+    }
+  };
+
+  const handleRemoveRoomTypeImage = (typeId: string, imgIndex: number) => {
+    setNewKosRoomTypes(
+      newKosRoomTypes.map((t) => {
+        if (t.id !== typeId) return t;
+        const nextImgs = t.images.filter((_, idx) => idx !== imgIndex);
+        return { ...t, images: nextImgs };
+      })
+    );
+  };
+
   const handleSaveFullKos = () => {
     if (!newKosName.trim()) {
       showAlert('Form Belum Lengkap', 'Silakan masukkan nama properti kosan.', 'warning');
@@ -709,7 +705,7 @@ export default function DashboardMitra({
       return;
     }
     if (newKosRoomTypes.length === 0) {
-      showAlert('Form Belum Lengkap', 'Silakan tambahkan minimal 1 tipe kamar.', 'warning');
+      showAlert('Belum Ada Tipe Kamar', 'Silakan klik tombol "+ Tambah Tipe Kamar" untuk menambahkan minimal 1 tipe kamar.', 'warning');
       return;
     }
 
@@ -728,7 +724,8 @@ export default function DashboardMitra({
       price: parseInt(rt.price.replace(/\D/g, ''), 10) || 1200000,
       size: rt.size.trim() || '3x4 m',
       totalUnits: parseInt(rt.totalUnits.replace(/\D/g, ''), 10) || 1,
-      image: rt.image,
+      image: rt.images[0] || undefined,
+      images: rt.images,
       facilities: rt.facilities.length > 0 ? rt.facilities : ['Kasur', 'Lemari Pakaian', 'WiFi'],
     }));
 
@@ -742,7 +739,7 @@ export default function DashboardMitra({
       managerPhone: newKosManagerPhone.trim() || '081234567890',
       totalRooms: totalRoomsCount,
       type: newKosType,
-      imageUrl: newKosImageUrl,
+      imageUrl: newKosImageUrl || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&auto=format&fit=crop&q=80',
       roomTypes: mappedRoomTypes,
     };
 
@@ -762,7 +759,6 @@ export default function DashboardMitra({
           price: rt.price,
           status: 'kosong',
           facilities: rt.facilities,
-          imageUrl: rt.image,
         });
       }
     });
@@ -776,26 +772,8 @@ export default function DashboardMitra({
     setNewKosName('');
     setNewKosAddress('');
     setNewKosType('Campur');
-    setNewKosRoomTypes([
-      {
-        id: 'rt-init-1',
-        name: 'Tipe Standar',
-        price: '1200000',
-        size: '3x3 m',
-        totalUnits: '4',
-        image: sampleRoomImages[2].url,
-        facilities: ['Kipas Angin', 'KM Dalam', 'WiFi', 'Kasur Single', 'Lemari Pakaian'],
-      },
-      {
-        id: 'rt-init-2',
-        name: 'Tipe Deluxe',
-        price: '1600000',
-        size: '3.5x4 m',
-        totalUnits: '4',
-        image: sampleRoomImages[0].url,
-        facilities: ['AC', 'KM Dalam', 'WiFi', 'Kasur Queen', 'Lemari Pakaian', 'Meja Belajar'],
-      },
-    ]);
+    setNewKosImageUrl(null);
+    setNewKosRoomTypes([]);
 
     showAlert(
       'Properti Kos Berhasil Dibuat!',
@@ -2454,7 +2432,7 @@ export default function DashboardMitra({
           <View className="flex-row items-center justify-between mb-4">
             <Pressable
               onPress={() => setAkunView('profile')}
-              className="flex-row items-center gap-1.5 bg-white px-3 py-2 rounded-xl border border-gray-200 active:bg-gray-100 shadow-xs"
+              className="flex-row items-center gap-1.5 bg-white px-3.5 py-2 rounded-xl border border-gray-200 active:bg-gray-100 shadow-xs"
             >
               <ArrowLeft size={16} color="#374151" />
               <Text className="text-xs font-bold text-gray-700">
@@ -2474,101 +2452,97 @@ export default function DashboardMitra({
             <Text className="text-xl font-black text-gray-900 tracking-tight">
               Tambah Properti & Tipe Kamar
             </Text>
-            <Text className="text-xs text-gray-500 font-medium mt-0.5">
-              Lengkapi foto bangunan, info pengelola, dan tipe-tipe kamar kosan Anda.
+            <Text className="text-xs text-gray-500 font-medium mt-1">
+              Lengkapi foto bangunan, info pengelola, dan tipe-tipe kamar kosan Anda langsung dari galeri HP.
             </Text>
           </View>
 
-          {/* CARD 1: Foto Utama Bangunan Kos */}
+          {/* CARD 1: Foto Utama Bangunan Kos (Langsung dari Galeri HP) */}
           <View className="bg-white rounded-3xl p-5 border border-gray-200/80 shadow-xs mb-5">
-            <View className="flex-row items-center gap-2 mb-3">
-              <View style={{ backgroundColor: '#5194EA' }} className="w-8 h-8 rounded-xl items-center justify-center">
-                <ImageIcon size={16} color="#FFFFFF" strokeWidth={2.4} />
+            <View className="flex-row items-center gap-2 mb-1.5">
+              <View style={{ backgroundColor: '#5194EA' }} className="w-8 h-8 rounded-xl items-center justify-center shadow-xs">
+                <Building2 size={16} color="#FFFFFF" strokeWidth={2.4} />
               </View>
               <View>
                 <Text className="text-sm font-extrabold text-gray-900">
-                  1. Foto Utama Bangunan Kos
-                </Text>
-                <Text className="text-[10px] text-gray-400 font-medium">
-                  Foto fasad / tampak depan bangunan kosan
+                  1. Foto Bangunan Kos (Tampak Depan)
                 </Text>
               </View>
             </View>
-
-            {/* Selected Image Preview */}
-            <View className="relative w-full h-44 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-3">
-              <Image
-                source={{ uri: newKosImageUrl }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-              <View className="absolute bottom-2.5 left-2.5 bg-black/60 px-3 py-1 rounded-lg">
-                <Text className="text-[10px] font-bold text-white">
-                  Foto Utama Terpilih
-                </Text>
-              </View>
-            </View>
-
-            {/* Preset Photo Options */}
-            <Text className="text-xs font-bold text-gray-700 mb-2">
-              Pilih Foto Sampel Bangunan:
+            <Text className="text-[11px] text-gray-400 font-medium mb-3.5 ml-10">
+              Unggah foto fasad atau gedung tampak depan langsung dari galeri handphone Anda.
             </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8 }}
-            >
-              {sampleBuildingImages.map((bld) => {
-                const isSelected = newKosImageUrl === bld.url;
-                return (
+
+            {/* If no photo picked yet */}
+            {!newKosImageUrl ? (
+              <Pressable
+                onPress={handlePickBuildingImage}
+                style={{ borderColor: '#5194EA', borderStyle: 'dashed' }}
+                className="w-full border-2 rounded-2xl bg-blue-50/40 p-6 items-center justify-center active:bg-blue-100/50"
+              >
+                <View
+                  style={{ backgroundColor: '#5194EA' }}
+                  className="w-12 h-12 rounded-2xl items-center justify-center mb-2.5 shadow-xs"
+                >
+                  <Camera size={22} color="#FFFFFF" strokeWidth={2.3} />
+                </View>
+                <Text className="text-xs font-bold text-gray-900">
+                  Pilih Foto Bangunan dari Galeri HP
+                </Text>
+                <Text className="text-[10px] text-gray-400 mt-1 text-center">
+                  Format JPG, PNG (Maksimal 10MB)
+                </Text>
+              </Pressable>
+            ) : (
+              <View>
+                <View className="relative w-full h-48 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-3 shadow-xs">
+                  <Image
+                    source={{ uri: newKosImageUrl }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                  <View className="absolute bottom-2.5 left-2.5 bg-black/70 px-3 py-1 rounded-lg">
+                    <Text className="text-[10px] font-bold text-white">
+                      Foto Bangunan Terpilih
+                    </Text>
+                  </View>
+                </View>
+                <View className="flex-row gap-2">
                   <Pressable
-                    key={bld.id}
-                    onPress={() => setNewKosImageUrl(bld.url)}
-                    style={{
-                      borderColor: isSelected ? '#5194EA' : '#E5E7EB',
-                      borderWidth: isSelected ? 2.5 : 1,
-                    }}
-                    className="rounded-2xl overflow-hidden bg-white shadow-xs"
+                    onPress={handlePickBuildingImage}
+                    style={{ backgroundColor: '#5194EA' }}
+                    className="flex-1 py-2.5 rounded-xl flex-row items-center justify-center gap-1.5 active:bg-[#3B82F6] shadow-xs"
                   >
-                    <Image
-                      source={{ uri: bld.url }}
-                      className="w-24 h-16 bg-gray-100"
-                      resizeMode="cover"
-                    />
-                    <View className="p-1.5 items-center bg-white">
-                      <Text numberOfLines={1} className="text-[10px] font-bold text-gray-700">
-                        {bld.label}
-                      </Text>
-                      {isSelected && (
-                        <View
-                          style={{ backgroundColor: '#5194EA' }}
-                          className="mt-0.5 px-1.5 py-0.2 rounded-full"
-                        >
-                          <Text className="text-[8px] font-black text-white">Dipilih</Text>
-                        </View>
-                      )}
-                    </View>
+                    <Camera size={14} color="#FFFFFF" />
+                    <Text className="text-xs font-bold text-white">Ganti Foto</Text>
                   </Pressable>
-                );
-              })}
-            </ScrollView>
+                  <Pressable
+                    onPress={handleRemoveBuildingImage}
+                    className="px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 flex-row items-center justify-center gap-1.5 active:bg-red-100"
+                  >
+                    <Trash2 size={14} color="#DC2626" />
+                    <Text className="text-xs font-bold text-red-600">Hapus</Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
           </View>
 
           {/* CARD 2: Informasi Dasar Bangunan */}
           <View className="bg-white rounded-3xl p-5 border border-gray-200/80 shadow-xs mb-5">
-            <View className="flex-row items-center gap-2 mb-3">
-              <View style={{ backgroundColor: '#5194EA' }} className="w-8 h-8 rounded-xl items-center justify-center">
+            <View className="flex-row items-center gap-2 mb-1.5">
+              <View style={{ backgroundColor: '#5194EA' }} className="w-8 h-8 rounded-xl items-center justify-center shadow-xs">
                 <Building2 size={16} color="#FFFFFF" strokeWidth={2.4} />
               </View>
               <View>
                 <Text className="text-sm font-extrabold text-gray-900">
                   2. Informasi Dasar Kosan
                 </Text>
-                <Text className="text-[10px] text-gray-400 font-medium">
-                  Nama, alamat lokasi, dan kontak pengelola
-                </Text>
               </View>
             </View>
+            <Text className="text-[11px] text-gray-400 font-medium mb-3.5 ml-10">
+              Nama kosan, alamat lokasi, tipe sewa, dan nomor pengelola
+            </Text>
 
             {/* Nama Kos */}
             <View className="mb-3.5">
@@ -2663,229 +2637,309 @@ export default function DashboardMitra({
             </View>
           </View>
 
-          {/* CARD 3: TIPE-TIPE KAMAR (BISA TAMBAH BANYAK!) */}
+          {/* CARD 3: TIPE-TIPE KAMAR (BISA TAMBAH BANYAK & MULTI-FOTO DARI GALERI) */}
           <View className="bg-white rounded-3xl p-5 border border-gray-200/80 shadow-xs mb-5">
-            <View className="flex-row items-center justify-between mb-3">
-              <View className="flex-row items-center gap-2 flex-1 mr-2">
-                <View style={{ backgroundColor: '#5194EA' }} className="w-8 h-8 rounded-xl items-center justify-center">
+            {/* Header: Title & Description */}
+            <View className="mb-3.5">
+              <View className="flex-row items-center gap-2 mb-1">
+                <View style={{ backgroundColor: '#5194EA' }} className="w-8 h-8 rounded-xl items-center justify-center shadow-xs">
                   <DoorClosed size={16} color="#FFFFFF" strokeWidth={2.4} />
                 </View>
-                <View>
-                  <Text className="text-sm font-extrabold text-gray-900">
-                    3. Tipe-Tipe Kamar ({newKosRoomTypes.length} Tipe)
-                  </Text>
-                  <Text className="text-[10px] text-gray-400 font-medium">
-                    Tentukan foto, harga, ukuran, & fasilitas per tipe
-                  </Text>
-                </View>
-              </View>
-
-              <Pressable
-                onPress={handleAddRoomTypeDraft}
-                style={{ backgroundColor: '#5194EA' }}
-                className="px-3 py-1.5 rounded-xl flex-row items-center gap-1 active:bg-[#3B82F6] shadow-xs"
-              >
-                <Plus size={14} color="#FFFFFF" strokeWidth={3} />
-                <Text className="text-xs font-bold text-white">
-                  Tambah Tipe
+                <Text className="text-sm font-extrabold text-gray-900">
+                  3. Tipe-Tipe Kamar ({newKosRoomTypes.length} Tipe)
                 </Text>
-              </Pressable>
+              </View>
+              <Text className="text-[11px] text-gray-400 font-medium ml-10">
+                Atur tipe kamar (seperti Standar, Deluxe, VIP), harga, fasilitas, dan foto interior dari galeri HP.
+              </Text>
             </View>
 
-            {/* List of Room Type Cards */}
-            <View className="gap-4">
-              {newKosRoomTypes.map((rt, index) => (
-                <View
-                  key={rt.id}
-                  className="bg-gray-50/80 border border-gray-200 rounded-2xl p-4 shadow-xs"
+            {/* Empty State: Belum ada tipe kamar */}
+            {newKosRoomTypes.length === 0 ? (
+              <View className="bg-gray-50 border border-gray-200 rounded-2xl p-5 items-center justify-center my-1">
+                <DoorClosed size={34} color="#9CA3AF" />
+                <Text className="text-xs font-bold text-gray-800 mt-2">
+                  Belum Ada Tipe Kamar
+                </Text>
+                <Text className="text-[11px] text-gray-400 text-center mt-0.5 mb-3.5 max-w-[280px]">
+                  Kosan wajib memiliki minimal 1 tipe kamar. Klik tombol di bawah untuk menambahkan tipe kamar pertama.
+                </Text>
+                <Pressable
+                  onPress={handleAddRoomTypeDraft}
+                  style={{ backgroundColor: '#5194EA' }}
+                  className="px-4 py-2.5 rounded-xl flex-row items-center gap-1.5 active:bg-[#3B82F6] shadow-xs"
                 >
-                  {/* Type Card Header */}
-                  <View className="flex-row items-center justify-between pb-2.5 mb-3 border-b border-gray-200/80">
-                    <View className="flex-row items-center gap-2">
-                      <View
-                        style={{ backgroundColor: '#5194EA' }}
-                        className="w-6 h-6 rounded-lg items-center justify-center"
-                      >
-                        <Text className="text-xs font-extrabold text-white">
-                          {index + 1}
-                        </Text>
-                      </View>
-                      <Text className="text-sm font-extrabold text-gray-900">
-                        {rt.name || `Tipe Kamar ${index + 1}`}
-                      </Text>
-                    </View>
-
-                    {newKosRoomTypes.length > 1 && (
-                      <Pressable
-                        onPress={() => handleRemoveRoomTypeDraft(rt.id)}
-                        className="w-7 h-7 rounded-lg bg-red-100 items-center justify-center active:bg-red-200"
-                      >
-                        <Trash2 size={14} color="#DC2626" />
-                      </Pressable>
-                    )}
-                  </View>
-
-                  {/* Foto Interior Kamar Picker */}
-                  <View className="mb-3">
-                    <Text className="text-xs font-bold text-gray-700 mb-1.5">
-                      Foto Interior Kamar:
-                    </Text>
-                    <View className="flex-row items-center gap-2.5 mb-2">
-                      <Image
-                        source={{ uri: rt.image }}
-                        className="w-20 h-16 rounded-xl bg-gray-200 border border-gray-300"
-                        resizeMode="cover"
-                      />
-                      <View className="flex-1">
-                        <Text className="text-xs font-bold text-gray-800">
-                          Pratinjau Foto Kamar
-                        </Text>
-                        <Text className="text-[10px] text-gray-400">
-                          Pilih gaya interior di bawah untuk tipe ini
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Room Presets Scroll */}
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={{ gap: 6 }}
+                  <Plus size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text className="text-xs font-bold text-white">
+                    Tambah Tipe Kamar Pertama
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              /* List of Room Type Accordion Cards */
+              <View className="gap-3.5">
+                {newKosRoomTypes.map((rt, index) => {
+                  const isExpanded = rt.isExpanded !== false;
+                  return (
+                    <View
+                      key={rt.id}
+                      className="bg-gray-50/90 border border-gray-200 rounded-2xl p-4 shadow-xs overflow-hidden"
                     >
-                      {sampleRoomImages.map((sImg) => {
-                        const isSelected = rt.image === sImg.url;
-                        return (
-                          <Pressable
-                            key={sImg.id}
-                            onPress={() => handleUpdateRoomTypeDraft(rt.id, 'image', sImg.url)}
-                            style={{
-                              borderColor: isSelected ? '#5194EA' : '#E5E7EB',
-                              borderWidth: isSelected ? 2 : 1,
-                            }}
-                            className="rounded-xl overflow-hidden bg-white"
+                      {/* Accordion Top Header */}
+                      <View className="flex-row items-center justify-between pb-2.5 border-b border-gray-200">
+                        <Pressable
+                          onPress={() => handleToggleExpandRoomType(rt.id)}
+                          className="flex-row items-center gap-2 flex-1 mr-2 active:opacity-75"
+                        >
+                          <View
+                            style={{ backgroundColor: '#5194EA' }}
+                            className="w-6 h-6 rounded-lg items-center justify-center shadow-xs"
                           >
-                            <Image
-                              source={{ uri: sImg.url }}
-                              className="w-16 h-12 bg-gray-100"
-                              resizeMode="cover"
-                            />
-                            <View className="p-1 items-center bg-white">
-                              <Text numberOfLines={1} className="text-[9px] font-bold text-gray-700">
-                                {sImg.label}
-                              </Text>
-                            </View>
+                            <Text className="text-xs font-extrabold text-white">
+                              {index + 1}
+                            </Text>
+                          </View>
+                          <View className="flex-1">
+                            <Text numberOfLines={1} className="text-xs font-black text-gray-900">
+                              {rt.name || `Tipe Kamar ${index + 1}`}
+                            </Text>
+                            <Text className="text-[10px] text-gray-500 mt-0.5">
+                              Rp {parseInt(rt.price || '0', 10).toLocaleString('id-ID')}/bln • {rt.totalUnits || 0} Kamar • {rt.images.length} Foto
+                            </Text>
+                          </View>
+                        </Pressable>
+
+                        <View className="flex-row items-center gap-1.5">
+                          <Pressable
+                            onPress={() => handleToggleExpandRoomType(rt.id)}
+                            className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 flex-row items-center gap-1 active:bg-gray-100"
+                          >
+                            <Text className="text-[10px] font-bold text-gray-700">
+                              {isExpanded ? 'Tutup' : 'Buka'}
+                            </Text>
+                            {isExpanded ? (
+                              <ChevronUp size={12} color="#4B5563" strokeWidth={2.5} />
+                            ) : (
+                              <ChevronDown size={12} color="#4B5563" strokeWidth={2.5} />
+                            )}
                           </Pressable>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
 
-                  {/* Nama Tipe & Harga */}
-                  <View className="flex-row gap-3 mb-3">
-                    <View className="flex-1">
-                      <Text className="text-[11px] font-bold text-gray-700 mb-1">
-                        Nama Tipe Kamar <Text className="text-red-500">*</Text>
-                      </Text>
-                      <TextInput
-                        value={rt.name}
-                        onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'name', val)}
-                        placeholder="Contoh: Deluxe King"
-                        placeholderTextColor="#9CA3AF"
-                        className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-[11px] font-bold text-gray-700 mb-1">
-                        Harga / Bulan (Rp) <Text className="text-red-500">*</Text>
-                      </Text>
-                      <TextInput
-                        value={rt.price}
-                        onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'price', val)}
-                        keyboardType="numeric"
-                        placeholder="1500000"
-                        placeholderTextColor="#9CA3AF"
-                        className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
-                      />
-                    </View>
-                  </View>
-
-                  {/* Ukuran & Jumlah Unit */}
-                  <View className="flex-row gap-3 mb-3">
-                    <View className="flex-1">
-                      <Text className="text-[11px] font-bold text-gray-700 mb-1">
-                        Ukuran Kamar
-                      </Text>
-                      <TextInput
-                        value={rt.size}
-                        onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'size', val)}
-                        placeholder="3.5 x 4 m"
-                        placeholderTextColor="#9CA3AF"
-                        className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-[11px] font-bold text-gray-700 mb-1">
-                        Jumlah Kamar Tipe Ini
-                      </Text>
-                      <TextInput
-                        value={rt.totalUnits}
-                        onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'totalUnits', val)}
-                        keyboardType="numeric"
-                        placeholder="4"
-                        placeholderTextColor="#9CA3AF"
-                        className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
-                      />
-                    </View>
-                  </View>
-
-                  {/* Fasilitas Kamar Checklist */}
-                  <View>
-                    <Text className="text-[11px] font-bold text-gray-700 mb-1.5">
-                      Fasilitas Tipe Kamar Ini:
-                    </Text>
-                    <View className="flex-row flex-wrap gap-1.5">
-                      {allAvailableFacilities.map((fac) => {
-                        const isSelected = rt.facilities.includes(fac);
-                        return (
                           <Pressable
-                            key={fac}
-                            onPress={() => handleToggleRoomTypeFacility(rt.id, fac)}
-                            style={{
-                              backgroundColor: isSelected ? '#5194EA' : '#FFFFFF',
-                              borderColor: isSelected ? '#5194EA' : '#E5E7EB',
-                            }}
-                            className="px-2.5 py-1.5 rounded-lg border flex-row items-center gap-1 active:scale-98"
+                            onPress={() => handleRemoveRoomTypeDraft(rt.id)}
+                            className="w-7 h-7 rounded-lg bg-red-100 items-center justify-center active:bg-red-200"
                           >
-                            {isSelected && <Check size={11} color="#FFFFFF" strokeWidth={3} />}
-                            <Text
-                              style={{
-                                color: isSelected ? '#FFFFFF' : '#374151',
-                                fontWeight: isSelected ? '700' : '500',
-                              }}
-                              className="text-[11px]"
-                            >
-                              {fac}
+                            <Trash2 size={13} color="#DC2626" />
+                          </Pressable>
+                        </View>
+                      </View>
+
+                      {/* Expanded Room Type Content */}
+                      {isExpanded && (
+                        <View className="pt-3.5 gap-3.5">
+                          {/* Nama Tipe & Harga */}
+                          <View className="flex-row gap-2.5">
+                            <View className="flex-1">
+                              <Text className="text-[11px] font-bold text-gray-700 mb-1">
+                                Nama Tipe Kamar <Text className="text-red-500">*</Text>
+                              </Text>
+                              <TextInput
+                                value={rt.name}
+                                onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'name', val)}
+                                placeholder="Contoh: Deluxe King"
+                                placeholderTextColor="#9CA3AF"
+                                className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
+                              />
+                            </View>
+                            <View className="flex-1">
+                              <Text className="text-[11px] font-bold text-gray-700 mb-1">
+                                Harga / Bulan (Rp) <Text className="text-red-500">*</Text>
+                              </Text>
+                              <TextInput
+                                value={rt.price}
+                                onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'price', val)}
+                                keyboardType="numeric"
+                                placeholder="1500000"
+                                placeholderTextColor="#9CA3AF"
+                                className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
+                              />
+                            </View>
+                          </View>
+
+                          {/* Ukuran & Jumlah Unit */}
+                          <View className="flex-row gap-2.5">
+                            <View className="flex-1">
+                              <Text className="text-[11px] font-bold text-gray-700 mb-1">
+                                Ukuran Kamar
+                              </Text>
+                              <TextInput
+                                value={rt.size}
+                                onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'size', val)}
+                                placeholder="Contoh: 3.5 x 4 m"
+                                placeholderTextColor="#9CA3AF"
+                                className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
+                              />
+                            </View>
+                            <View className="flex-1">
+                              <Text className="text-[11px] font-bold text-gray-700 mb-1">
+                                Jumlah Unit Kamar <Text className="text-red-500">*</Text>
+                              </Text>
+                              <TextInput
+                                value={rt.totalUnits}
+                                onChangeText={(val) => handleUpdateRoomTypeDraft(rt.id, 'totalUnits', val)}
+                                keyboardType="numeric"
+                                placeholder="Contoh: 4"
+                                placeholderTextColor="#9CA3AF"
+                                className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 font-semibold"
+                              />
+                            </View>
+                          </View>
+
+                          {/* Foto Interior Kamar (Galeri Handphone - Bisa Banyak!) */}
+                          <View>
+                            <View className="flex-row items-center justify-between mb-2">
+                              <View>
+                                <Text className="text-[11px] font-bold text-gray-700">
+                                  Foto Kamar ({rt.images.length} Foto Terpilih)
+                                </Text>
+                                <Text className="text-[9px] text-gray-400">
+                                  Pilih beberapa foto interior kamar dari galeri HP
+                                </Text>
+                              </View>
+
+                              <Pressable
+                                onPress={() => handlePickRoomTypeImages(rt.id)}
+                                style={{ backgroundColor: '#5194EA' }}
+                                className="px-3 py-1.5 rounded-lg flex-row items-center gap-1 active:bg-[#3B82F6]"
+                              >
+                                <Camera size={12} color="#FFFFFF" />
+                                <Text className="text-[10px] font-bold text-white">
+                                  + Tambah Foto
+                                </Text>
+                              </Pressable>
+                            </View>
+
+                            {/* Foto Preview Horizontal List */}
+                            {rt.images.length === 0 ? (
+                              <Pressable
+                                onPress={() => handlePickRoomTypeImages(rt.id)}
+                                style={{ borderColor: '#93C5FD', borderStyle: 'dashed' }}
+                                className="border rounded-xl p-3.5 bg-white items-center justify-center active:bg-blue-50/50"
+                              >
+                                <ImageIcon size={20} color="#9CA3AF" />
+                                <Text className="text-[11px] font-bold text-[#1D4ED8] mt-1">
+                                  Klik untuk upload foto interior kamar dari galeri
+                                </Text>
+                                <Text className="text-[9px] text-gray-400 mt-0.5">
+                                  Bisa memilih lebih dari 1 foto sekaligus
+                                </Text>
+                              </Pressable>
+                            ) : (
+                              <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
+                              >
+                                {rt.images.map((imgUri, imgIdx) => (
+                                  <View
+                                    key={imgIdx}
+                                    className="relative rounded-xl overflow-hidden bg-gray-100 border border-gray-300"
+                                  >
+                                    <Image
+                                      source={{ uri: imgUri }}
+                                      className="w-24 h-18 bg-gray-200"
+                                      resizeMode="cover"
+                                    />
+                                    <View className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 rounded">
+                                      <Text className="text-[8px] font-bold text-white">
+                                        Foto {imgIdx + 1}
+                                      </Text>
+                                    </View>
+                                    <Pressable
+                                      onPress={() => handleRemoveRoomTypeImage(rt.id, imgIdx)}
+                                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600/90 items-center justify-center active:scale-95"
+                                    >
+                                      <X size={10} color="#FFFFFF" strokeWidth={3} />
+                                    </Pressable>
+                                  </View>
+                                ))}
+
+                                {/* Extra add button at end of horizontal list */}
+                                <Pressable
+                                  onPress={() => handlePickRoomTypeImages(rt.id)}
+                                  style={{ borderColor: '#93C5FD', borderStyle: 'dashed' }}
+                                  className="w-20 h-18 rounded-xl border items-center justify-center bg-white active:bg-blue-50"
+                                >
+                                  <Plus size={16} color="#5194EA" strokeWidth={2.5} />
+                                  <Text className="text-[9px] font-bold text-[#5194EA] mt-0.5">
+                                    Tambah
+                                  </Text>
+                                </Pressable>
+                              </ScrollView>
+                            )}
+                          </View>
+
+                          {/* Fasilitas Kamar Checklist */}
+                          <View>
+                            <Text className="text-[11px] font-bold text-gray-700 mb-1.5">
+                              Fasilitas Tipe Kamar Ini:
+                            </Text>
+                            <View className="flex-row flex-wrap gap-1.5">
+                              {allAvailableFacilities.map((fac) => {
+                                const isSelected = rt.facilities.includes(fac);
+                                return (
+                                  <Pressable
+                                    key={fac}
+                                    onPress={() => handleToggleRoomTypeFacility(rt.id, fac)}
+                                    style={{
+                                      backgroundColor: isSelected ? '#5194EA' : '#FFFFFF',
+                                      borderColor: isSelected ? '#5194EA' : '#E5E7EB',
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-lg border flex-row items-center gap-1 active:scale-98"
+                                  >
+                                    {isSelected && <Check size={11} color="#FFFFFF" strokeWidth={3} />}
+                                    <Text
+                                      style={{
+                                        color: isSelected ? '#FFFFFF' : '#374151',
+                                        fontWeight: isSelected ? '700' : '500',
+                                      }}
+                                      className="text-[11px]"
+                                    >
+                                      {fac}
+                                    </Text>
+                                  </Pressable>
+                                );
+                              })}
+                            </View>
+                          </View>
+
+                          {/* Collapse button */}
+                          <Pressable
+                            onPress={() => handleToggleExpandRoomType(rt.id)}
+                            className="py-2 rounded-xl bg-gray-200/80 items-center justify-center active:bg-gray-300 mt-1"
+                          >
+                            <Text className="text-[11px] font-bold text-gray-700">
+                              Selesai Mengatur Tipe Ini
                             </Text>
                           </Pressable>
-                        );
-                      })}
+                        </View>
+                      )}
                     </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+                  );
+                })}
 
-            {/* Add More Room Type Button */}
-            <Pressable
-              onPress={handleAddRoomTypeDraft}
-              style={{ borderColor: '#5194EA' }}
-              className="mt-4 py-3 rounded-2xl border border-dashed bg-blue-50/50 flex-row items-center justify-center gap-2 active:bg-blue-100/60"
-            >
-              <Plus size={16} color="#1D4ED8" strokeWidth={2.5} />
-              <Text className="text-xs font-bold text-[#1D4ED8]">
-                + Tambah Tipe Kamar Lainnya
-              </Text>
-            </Pressable>
+                {/* Add More Room Type Button */}
+                <Pressable
+                  onPress={handleAddRoomTypeDraft}
+                  style={{ borderColor: '#5194EA', borderStyle: 'dashed' }}
+                  className="mt-2 py-3 rounded-2xl border-2 bg-blue-50/50 flex-row items-center justify-center gap-2 active:bg-blue-100/60"
+                >
+                  <Plus size={16} color="#1D4ED8" strokeWidth={2.5} />
+                  <Text className="text-xs font-bold text-[#1D4ED8]">
+                    + Tambah Tipe Kamar Lainnya
+                  </Text>
+                </Pressable>
+              </View>
+            )}
           </View>
 
           {/* CARD 4: Ringkasan Total & Submit Button */}
@@ -2903,10 +2957,16 @@ export default function DashboardMitra({
                 <Text className="text-xs font-medium text-gray-700">Jumlah Tipe Kamar:</Text>
                 <Text className="text-xs font-bold text-[#1D4ED8]">{newKosRoomTypes.length} Tipe</Text>
               </View>
-              <View className="flex-row justify-between">
+              <View className="flex-row justify-between mb-1">
                 <Text className="text-xs font-medium text-gray-700">Total Unit Kamar:</Text>
                 <Text className="text-xs font-extrabold text-[#1D4ED8]">
                   {newKosRoomTypes.reduce((sum, t) => sum + (parseInt(t.totalUnits, 10) || 0), 0)} Kamar (Otomatis Dibuat)
+                </Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-xs font-medium text-gray-700">Foto Bangunan:</Text>
+                <Text className="text-xs font-bold text-[#1D4ED8]">
+                  {newKosImageUrl ? 'Foto Terpilih' : 'Belum Ada'}
                 </Text>
               </View>
             </View>
