@@ -13,7 +13,7 @@ import {
   useWindowDimensions,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Svg, { Path, Rect, Circle, G, Line } from 'react-native-svg';
 import KamarMitra, {
@@ -281,6 +281,8 @@ export default function DashboardMitra({
   onLogout,
 }: DashboardMitraProps) {
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const bottomNavMargin = Math.max(insets.bottom, 12) + 6;
   const [selectedFilter, setSelectedFilter] = useState<DateFilterType>('Bulan Ini');
   const [customStartDate, setCustomStartDate] = useState('2026-09-01');
   const [customEndDate, setCustomEndDate] = useState('2026-09-30');
@@ -3515,7 +3517,7 @@ export default function DashboardMitra({
       <View
         style={{
           position: 'absolute',
-          bottom: 20,
+          bottom: bottomNavMargin,
           left: width > 560 ? (width - 500) / 2 : 12,
           right: width > 560 ? (width - 500) / 2 : 12,
           maxWidth: 500,

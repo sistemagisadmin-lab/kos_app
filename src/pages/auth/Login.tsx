@@ -11,26 +11,29 @@ import {
 import CustomAlertModal from '../../components/CustomAlertModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
-import { ArrowLeft, Phone, User, Building2 } from 'lucide-react-native';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Building2 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import Svg, { Path } from 'react-native-svg';
 import { Button } from '@/components/ui/Button';
+import { authService, AuthUser } from '@/services/authService';
 
 export type UserRole = 'seeker' | 'owner';
 
 export interface LoginFormData {
-  phoneNumber: string;
+  email: string;
+  password: string;
 }
 
 interface LoginProps {
   onBack?: () => void;
   onGoToRegister?: () => void;
-  onSuccess?: (role: UserRole) => void;
+  onSuccess?: (role: UserRole, user?: AuthUser) => void;
 }
 
 export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginProps) {
   const [role, setRole] = useState<UserRole>('seeker');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [alertModal, setAlertModal] = useState<{
     visible: boolean;
@@ -73,18 +76,40 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
   } = useForm<LoginFormData>({
     mode: 'onChange',
     defaultValues: {
-      phoneNumber: '',
+      email: '',
+      password: '',
     },
   });
 
-  const onSubmit = (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await authService.signIn({
+        email: data.email.trim(),
+        password: data.password,
+      });
+
       setIsLoading(false);
-      if (onSuccess) {
-        onSuccess(role);
+
+      if (response.success && response.data) {
+        if (onSuccess) {
+          onSuccess(role, response.data.user);
+        }
+      } else {
+        showAlert(
+          'Gagal Masuk',
+          response.error?.message || 'Email atau kata sandi tidak sesuai. Silakan coba lagi.',
+          'error'
+        );
       }
-    }, 400);
+    } catch (err: any) {
+      setIsLoading(false);
+      showAlert(
+        'Terjadi Kesalahan',
+        err.message || 'Gagal memproses login ke server.',
+        'error'
+      );
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -225,59 +250,120 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
             <Text className="text-[26px] font-extrabold text-gray-900 tracking-tight leading-tight mb-2">
               Masuk {role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos'}
             </Text>
-            <Text className="text-sm text-gray-400 font-normal leading-relaxed mb-8">
-              {role === 'seeker'
-                ? 'Silakan masukkan nomor ponsel Anda untuk mulai mencari & menyewa kos.'
-                : 'Silakan masukkan nomor ponsel Anda untuk mengelola properti & kos Anda.'}
+            <Text className="text-sm text-gray-400 font-normal leading-relaxed mb-6">
+              Silakan masukkan email dan kata sandi Anda untuk melanjutkan.
             </Text>
 
-            {/* Phone Number Input Field with React Hook Form */}
-            <View className="mb-5">
+            {/* Email Input Field */}
+            <View className="mb-4">
+              <Text className="text-xs font-bold text-gray-700 mb-1.5 ml-1">
+                Alamat Email <Text className="text-red-500">*</Text>
+              </Text>
               <Controller
                 control={control}
-                name="phoneNumber"
+                name="email"
                 rules={{
-                  required: 'Nomor ponsel wajib diisi',
+                  required: 'Alamat email wajib diisi',
                   pattern: {
-                    value: /^[0-9+]{8,16}$/,
-                    message: 'Nomor ponsel harus berupa angka (minimal 8 digit)',
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Format alamat email tidak valid',
                   },
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <View
                     style={{
-                      borderColor: errors.phoneNumber ? '#EF4444' : '#E5E7EB',
+                      borderColor: errors.email ? '#EF4444' : '#E5E7EB',
                     }}
                     className="w-full bg-white rounded-2xl px-4 py-3.5 flex-row items-center border"
                   >
                     <View className="mr-3">
-                      <Phone
+                      <Mail
                         size={18}
-                        color={errors.phoneNumber ? '#EF4444' : '#9CA3AF'}
+                        color={errors.email ? '#EF4444' : '#9CA3AF'}
                       />
                     </View>
                     <TextInput
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      placeholder="Masukkan nomor ponsel Anda"
+                      placeholder="user@example.com"
                       placeholderTextColor="#A0AEC0"
-                      keyboardType="phone-pad"
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      className="flex-1 text-sm text-gray-900 font-medium p-0"
                     />
                   </View>
                 )}
               />
-              {errors.phoneNumber && (
+              {errors.email && (
                 <Text className="text-xs text-red-500 mt-1.5 ml-1 font-medium">
-                  {errors.phoneNumber.message}
+                  {errors.email.message}
                 </Text>
               )}
             </View>
 
-            {/* Continue / Lanjutkan Button (Solid Blue #5194EA) */}
+            {/* Password Input Field */}
+            <View className="mb-5">
+              <Text className="text-xs font-bold text-gray-700 mb-1.5 ml-1">
+                Kata Sandi <Text className="text-red-500">*</Text>
+              </Text>
+              <Controller
+                control={control}
+                name="password"
+                rules={{
+                  required: 'Kata sandi wajib diisi',
+                  minLength: {
+                    value: 6,
+                    message: 'Kata sandi minimal 6 karakter',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View
+                    style={{
+                      borderColor: errors.password ? '#EF4444' : '#E5E7EB',
+                    }}
+                    className="w-full bg-white rounded-2xl px-4 py-3.5 flex-row items-center border"
+                  >
+                    <View className="mr-3">
+                      <Lock
+                        size={18}
+                        color={errors.password ? '#EF4444' : '#9CA3AF'}
+                      />
+                    </View>
+                    <TextInput
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      placeholder="Masukkan kata sandi"
+                      placeholderTextColor="#A0AEC0"
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      className="flex-1 text-sm text-gray-900 font-medium p-0"
+                    />
+                    <Pressable
+                      onPress={() => setShowPassword(!showPassword)}
+                      className="p-1"
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} color="#9CA3AF" />
+                      ) : (
+                        <Eye size={18} color="#9CA3AF" />
+                      )}
+                    </Pressable>
+                  </View>
+                )}
+              />
+              {errors.password && (
+                <Text className="text-xs text-red-500 mt-1.5 ml-1 font-medium">
+                  {errors.password.message}
+                </Text>
+              )}
+            </View>
+
+            {/* Continue / Masuk Button (Solid Blue #5194EA) */}
             <Button
-              title="Lanjutkan"
+              title="Masuk Sekarang"
               loading={isLoading || isSubmitting}
               style={{
                 backgroundColor: '#5194EA',
@@ -301,11 +387,11 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
                     onGoToRegister();
                   } else {
                     showAlert(
-                       'Daftar Akun',
-                       `Membuka halaman pendaftaran untuk ${
-                         role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos'
-                       }...`,
-                       'info'
+                      'Daftar Akun',
+                      `Membuka halaman pendaftaran untuk ${
+                        role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos'
+                      }...`,
+                      'info'
                     );
                   }
                 }}
@@ -325,7 +411,7 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
               <View className="flex-1 h-[1px] bg-gray-200" />
             </View>
 
-            {/* Google Social Login Only (Larger Icon) */}
+            {/* Google Social Login Only */}
             <View className="flex-row justify-center items-center">
               <Pressable
                 onPress={() => handleSocialLogin('Google')}

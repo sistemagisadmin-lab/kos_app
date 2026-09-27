@@ -14,9 +14,7 @@ import { useForm, Controller } from 'react-hook-form';
 import {
   ArrowLeft,
   User,
-  Phone,
-  MapPin,
-  Compass,
+  Mail,
   Lock,
   Eye,
   EyeOff,
@@ -24,14 +22,13 @@ import {
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Button } from '@/components/ui/Button';
+import { authService } from '@/services/authService';
 
 export type UserRole = 'seeker' | 'owner';
 
 export interface RegisterFormData {
-  fullName: string;
-  phoneNumber: string;
-  originCity: string;
-  birthPlace: string;
+  name: string;
+  email: string;
   password: string;
   confirmPassword: string;
 }
@@ -94,10 +91,8 @@ export default function RegisterPage({
   } = useForm<RegisterFormData>({
     mode: 'onChange',
     defaultValues: {
-      fullName: '',
-      phoneNumber: '',
-      originCity: '',
-      birthPlace: '',
+      name: '',
+      email: '',
       password: '',
       confirmPassword: '',
     },
@@ -105,26 +100,47 @@ export default function RegisterPage({
 
   const passwordValue = watch('password');
 
-  const onSubmit = (data: RegisterFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await authService.signUp({
+        name: data.name.trim(),
+        email: data.email.trim(),
+        password: data.password,
+      });
+
       setIsLoading(false);
-      const roleName = role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos';
-      showAlert(
-        'Pendaftaran Berhasil!',
-        `Selamat ${data.fullName}, akun ${roleName} Anda telah berhasil dibuat. Silakan masuk untuk melanjutkan.`,
-        'success',
-        'Masuk Sekarang',
-        undefined,
-        () => {
-          if (onSuccess) {
-            onSuccess();
-          } else if (onGoToLogin) {
-            onGoToLogin();
+
+      if (response.success && response.data) {
+        showAlert(
+          'Pendaftaran Berhasil!',
+          `Selamat ${response.data.user?.name || data.name}, akun Anda telah berhasil terdaftar.`,
+          'success',
+          'Masuk ke Akun',
+          undefined,
+          () => {
+            if (onSuccess) {
+              onSuccess();
+            } else if (onGoToLogin) {
+              onGoToLogin();
+            }
           }
-        }
+        );
+      } else {
+        showAlert(
+          'Gagal Mendaftar',
+          response.error?.message || 'Pendaftaran tidak dapat diproses. Silakan periksa kembali data Anda.',
+          'error'
+        );
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      showAlert(
+        'Terjadi Kesalahan',
+        err.message || 'Gagal terhubung ke server pendaftaran.',
+        'error'
       );
-    }, 800);
+    }
   };
 
   return (
@@ -148,9 +164,9 @@ export default function RegisterPage({
         >
           {/* Top Header / Back Button */}
           <View className="pt-2 pb-5">
-            {onBack || onGoToLogin ? (
+            {onBack ? (
               <Pressable
-                onPress={onBack || onGoToLogin}
+                onPress={onBack}
                 className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center active:bg-gray-200"
               >
                 <ArrowLeft size={20} color="#111827" strokeWidth={2.2} />
@@ -160,9 +176,8 @@ export default function RegisterPage({
             )}
           </View>
 
-          {/* Role Selection Cards */}
+          {/* Role Selector Cards */}
           <View className="flex-row gap-3 mb-6">
-            {/* Pencari Kos */}
             <Pressable
               onPress={() => setRole('seeker')}
               style={({ pressed }) => [
@@ -207,7 +222,6 @@ export default function RegisterPage({
               </View>
             </Pressable>
 
-            {/* Mitra Kos */}
             <Pressable
               onPress={() => setRole('owner')}
               style={({ pressed }) => [
@@ -253,217 +267,124 @@ export default function RegisterPage({
             </Pressable>
           </View>
 
-          {/* Title & Subtitle in Indonesian */}
+          {/* Title Header */}
           <Text className="text-[26px] font-extrabold text-gray-900 tracking-tight leading-tight mb-2">
-            Daftar Akun {role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos'}
+            Daftar Akun {role === 'seeker' ? 'Pencari' : 'Mitra'}
           </Text>
           <Text className="text-sm text-gray-400 font-normal leading-relaxed mb-6">
             Lengkapi data di bawah ini untuk membuat akun baru Anda.
           </Text>
 
-          {/* Form Fields using react-hook-form */}
+          {/* Form Fields */}
           <View className="gap-4 mb-6">
-            {/* Nama Lengkap */}
+            {/* 1. Nama Lengkap */}
             <View>
-              <Text className="text-xs font-semibold text-gray-700 mb-1.5 ml-1">
-                Nama Lengkap
+              <Text className="text-xs font-bold text-gray-700 mb-1.5 ml-1">
+                Nama Lengkap <Text className="text-red-500">*</Text>
               </Text>
               <Controller
                 control={control}
-                name="fullName"
+                name="name"
                 rules={{
                   required: 'Nama lengkap wajib diisi',
                   minLength: {
                     value: 3,
-                    message: 'Nama lengkap minimal 3 karakter',
+                    message: 'Nama minimal 3 karakter',
                   },
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <View
                     style={{
-                      borderColor: errors.fullName ? '#EF4444' : '#E5E7EB',
+                      borderColor: errors.name ? '#EF4444' : '#E5E7EB',
                     }}
                     className="w-full bg-white rounded-2xl px-4 py-3.5 flex-row items-center border"
                   >
                     <View className="mr-3">
                       <User
                         size={18}
-                        color={errors.fullName ? '#EF4444' : '#9CA3AF'}
+                        color={errors.name ? '#EF4444' : '#9CA3AF'}
                       />
                     </View>
                     <TextInput
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      placeholder="Masukkan nama lengkap Anda"
+                      placeholder="Contoh: Budi Santoso"
                       placeholderTextColor="#A0AEC0"
-                      autoCapitalize="words"
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
+                      className="flex-1 text-sm text-gray-900 font-medium p-0"
                     />
                   </View>
                 )}
               />
-              {errors.fullName && (
-                <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">
-                  {errors.fullName.message}
+              {errors.name && (
+                <Text className="text-xs text-red-500 mt-1.5 ml-1 font-medium">
+                  {errors.name.message}
                 </Text>
               )}
             </View>
 
-            {/* Nomor HP */}
+            {/* 2. Email */}
             <View>
-              <Text className="text-xs font-semibold text-gray-700 mb-1.5 ml-1">
-                Nomor Handphone (WhatsApp)
+              <Text className="text-xs font-bold text-gray-700 mb-1.5 ml-1">
+                Alamat Email <Text className="text-red-500">*</Text>
               </Text>
               <Controller
                 control={control}
-                name="phoneNumber"
+                name="email"
                 rules={{
-                  required: 'Nomor handphone wajib diisi',
+                  required: 'Alamat email wajib diisi',
                   pattern: {
-                    value: /^[0-9+]{8,16}$/,
-                    message: 'Nomor handphone harus berupa angka (minimal 8 digit)',
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Format alamat email tidak valid',
                   },
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <View
                     style={{
-                      borderColor: errors.phoneNumber ? '#EF4444' : '#E5E7EB',
+                      borderColor: errors.email ? '#EF4444' : '#E5E7EB',
                     }}
                     className="w-full bg-white rounded-2xl px-4 py-3.5 flex-row items-center border"
                   >
                     <View className="mr-3">
-                      <Phone
+                      <Mail
                         size={18}
-                        color={errors.phoneNumber ? '#EF4444' : '#9CA3AF'}
+                        color={errors.email ? '#EF4444' : '#9CA3AF'}
                       />
                     </View>
                     <TextInput
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      placeholder="Contoh: 08123456789"
+                      placeholder="user@example.com"
                       placeholderTextColor="#A0AEC0"
-                      keyboardType="phone-pad"
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      className="flex-1 text-sm text-gray-900 font-medium p-0"
                     />
                   </View>
                 )}
               />
-              {errors.phoneNumber && (
-                <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">
-                  {errors.phoneNumber.message}
+              {errors.email && (
+                <Text className="text-xs text-red-500 mt-1.5 ml-1 font-medium">
+                  {errors.email.message}
                 </Text>
               )}
             </View>
 
-            {/* Asal Mana (Kota/Daerah Asal) */}
+            {/* 3. Kata Sandi */}
             <View>
-              <Text className="text-xs font-semibold text-gray-700 mb-1.5 ml-1">
-                Asal Kota / Daerah
-              </Text>
-              <Controller
-                control={control}
-                name="originCity"
-                rules={{
-                  required: 'Kota atau daerah asal wajib diisi',
-                  minLength: {
-                    value: 2,
-                    message: 'Nama kota/daerah minimal 2 karakter',
-                  },
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View
-                    style={{
-                      borderColor: errors.originCity ? '#EF4444' : '#E5E7EB',
-                    }}
-                    className="w-full bg-white rounded-2xl px-4 py-3.5 flex-row items-center border"
-                  >
-                    <View className="mr-3">
-                      <MapPin
-                        size={18}
-                        color={errors.originCity ? '#EF4444' : '#9CA3AF'}
-                      />
-                    </View>
-                    <TextInput
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="Contoh: Jakarta, Surabaya, Bandung"
-                      placeholderTextColor="#A0AEC0"
-                      autoCapitalize="words"
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
-                    />
-                  </View>
-                )}
-              />
-              {errors.originCity && (
-                <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">
-                  {errors.originCity.message}
-                </Text>
-              )}
-            </View>
-
-            {/* Lahir di Mana (Tempat Lahir) */}
-            <View>
-              <Text className="text-xs font-semibold text-gray-700 mb-1.5 ml-1">
-                Tempat Lahir
-              </Text>
-              <Controller
-                control={control}
-                name="birthPlace"
-                rules={{
-                  required: 'Tempat kelahiran wajib diisi',
-                  minLength: {
-                    value: 2,
-                    message: 'Tempat kelahiran minimal 2 karakter',
-                  },
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View
-                    style={{
-                      borderColor: errors.birthPlace ? '#EF4444' : '#E5E7EB',
-                    }}
-                    className="w-full bg-white rounded-2xl px-4 py-3.5 flex-row items-center border"
-                  >
-                    <View className="mr-3">
-                      <Compass
-                        size={18}
-                        color={errors.birthPlace ? '#EF4444' : '#9CA3AF'}
-                      />
-                    </View>
-                    <TextInput
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="Kota tempat Anda lahir"
-                      placeholderTextColor="#A0AEC0"
-                      autoCapitalize="words"
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
-                    />
-                  </View>
-                )}
-              />
-              {errors.birthPlace && (
-                <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">
-                  {errors.birthPlace.message}
-                </Text>
-              )}
-            </View>
-
-            {/* Password */}
-            <View>
-              <Text className="text-xs font-semibold text-gray-700 mb-1.5 ml-1">
-                Password
+              <Text className="text-xs font-bold text-gray-700 mb-1.5 ml-1">
+                Kata Sandi <Text className="text-red-500">*</Text>
               </Text>
               <Controller
                 control={control}
                 name="password"
                 rules={{
-                  required: 'Password wajib diisi',
+                  required: 'Kata sandi wajib diisi',
                   minLength: {
                     value: 6,
-                    message: 'Password minimal 6 karakter',
+                    message: 'Kata sandi minimal 6 karakter',
                   },
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
@@ -486,11 +407,11 @@ export default function RegisterPage({
                       placeholder="Minimal 6 karakter"
                       placeholderTextColor="#A0AEC0"
                       secureTextEntry={!showPassword}
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
+                      autoCapitalize="none"
+                      className="flex-1 text-sm text-gray-900 font-medium p-0"
                     />
                     <Pressable
                       onPress={() => setShowPassword(!showPassword)}
-                      hitSlop={8}
                       className="p-1"
                     >
                       {showPassword ? (
@@ -503,24 +424,24 @@ export default function RegisterPage({
                 )}
               />
               {errors.password && (
-                <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">
+                <Text className="text-xs text-red-500 mt-1.5 ml-1 font-medium">
                   {errors.password.message}
                 </Text>
               )}
             </View>
 
-            {/* Konfirmasi Password */}
+            {/* 4. Konfirmasi Kata Sandi */}
             <View>
-              <Text className="text-xs font-semibold text-gray-700 mb-1.5 ml-1">
-                Konfirmasi Password
+              <Text className="text-xs font-bold text-gray-700 mb-1.5 ml-1">
+                Konfirmasi Kata Sandi <Text className="text-red-500">*</Text>
               </Text>
               <Controller
                 control={control}
                 name="confirmPassword"
                 rules={{
-                  required: 'Konfirmasi password wajib diisi',
-                  validate: (value) =>
-                    value === passwordValue || 'Konfirmasi password tidak cocok dengan password di atas',
+                  required: 'Konfirmasi kata sandi wajib diisi',
+                  validate: (val) =>
+                    val === passwordValue || 'Kata sandi konfirmasi tidak cocok',
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <View
@@ -539,14 +460,14 @@ export default function RegisterPage({
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      placeholder="Ulangi password Anda"
+                      placeholder="Ulangi kata sandi"
                       placeholderTextColor="#A0AEC0"
                       secureTextEntry={!showConfirmPassword}
-                      className="flex-1 text-base text-gray-900 font-medium p-0"
+                      autoCapitalize="none"
+                      className="flex-1 text-sm text-gray-900 font-medium p-0"
                     />
                     <Pressable
                       onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                      hitSlop={8}
                       className="p-1"
                     >
                       {showConfirmPassword ? (
@@ -559,21 +480,19 @@ export default function RegisterPage({
                 )}
               />
               {errors.confirmPassword && (
-                <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">
+                <Text className="text-xs text-red-500 mt-1.5 ml-1 font-medium">
                   {errors.confirmPassword.message}
                 </Text>
               )}
             </View>
           </View>
 
-          {/* Submit / Daftar Sekarang Button */}
+          {/* Submit Button (Solid Blue #5194EA) */}
           <Button
             title="Daftar Sekarang"
-            disabled={!isValid || isSubmitting}
             loading={isLoading || isSubmitting}
             style={{
               backgroundColor: '#5194EA',
-              opacity: isValid ? 1 : 0.6,
             }}
             textStyle={{
               color: '#FFFFFF',
@@ -583,23 +502,24 @@ export default function RegisterPage({
             onPress={handleSubmit(onSubmit)}
           />
 
-          {/* Link Sudah punya akun? Masuk di sini */}
-          <View className="flex-row justify-center items-center mt-5 mb-3">
+          {/* Sudah punya akun? Masuk di sini */}
+          <View className="flex-row justify-center items-center mt-5">
             <Text className="text-sm text-gray-500 font-normal">
               Sudah punya akun?{' '}
             </Text>
-            <Pressable onPress={onGoToLogin || onBack}>
+            <Pressable
+              onPress={() => {
+                if (onGoToLogin) {
+                  onGoToLogin();
+                } else if (onBack) {
+                  onBack();
+                }
+              }}
+            >
               <Text className="text-sm font-bold text-[#5194EA]">
                 Masuk di sini
               </Text>
             </Pressable>
-          </View>
-
-          {/* Terms / Disclaimer */}
-          <View className="items-center pt-2">
-            <Text className="text-[11px] text-gray-400 text-center leading-relaxed">
-              Dengan mendaftar, Anda menyetujui Ketentuan Layanan & Kebijakan Privasi kos-app.
-            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
