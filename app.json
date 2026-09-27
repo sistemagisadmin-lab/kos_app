@@ -21,6 +21,7 @@
       }
     },
     "android": {
+      "package": "com.sistemagis.kosapp",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -52,11 +53,26 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "280e18c9-3afd-46f9-a9d4-95264344eb7b"
+      }
     }
   }
 }

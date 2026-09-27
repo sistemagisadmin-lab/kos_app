@@ -7,8 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from 'react-native';
+import CustomAlertModal from '../../components/CustomAlertModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { ArrowLeft, Phone, User, Building2 } from 'lucide-react-native';
@@ -25,12 +25,46 @@ export interface LoginFormData {
 interface LoginProps {
   onBack?: () => void;
   onGoToRegister?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (role: UserRole) => void;
 }
 
 export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginProps) {
   const [role, setRole] = useState<UserRole>('seeker');
   const [isLoading, setIsLoading] = useState(false);
+
+  const [alertModal, setAlertModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type?: 'success' | 'warning' | 'error' | 'info';
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: 'success' | 'warning' | 'error' | 'info' = 'info',
+    confirmText = 'Mengerti',
+    cancelText?: string,
+    onConfirm?: () => void
+  ) => {
+    setAlertModal({
+      visible: true,
+      title,
+      message,
+      type,
+      confirmText,
+      cancelText,
+      onConfirm,
+    });
+  };
 
   const {
     control,
@@ -47,23 +81,16 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      const roleName = role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos';
-      Alert.alert(
-        'Kode Verifikasi Terkirim',
-        `Kode OTP telah dikirimkan ke nomor ${data.phoneNumber} sebagai ${roleName}.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => onSuccess && onSuccess(),
-          },
-        ]
-      );
-    }, 1000);
+      if (onSuccess) {
+        onSuccess(role);
+      }
+    }, 400);
   };
 
   const handleSocialLogin = (provider: string) => {
-    const roleName = role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos';
-    Alert.alert(`Masuk dengan ${provider}`, `Menghubungkan ke akun ${provider} sebagai ${roleName}...`);
+    if (onSuccess) {
+      onSuccess(role);
+    }
   };
 
   return (
@@ -108,8 +135,8 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
                 onPress={() => setRole('seeker')}
                 style={({ pressed }) => [
                   {
-                    backgroundColor: role === 'seeker' ? '#F0FDF4' : '#FFFFFF',
-                    borderColor: role === 'seeker' ? '#58c763' : '#E5E7EB',
+                    backgroundColor: role === 'seeker' ? '#EFF6FF' : '#FFFFFF',
+                    borderColor: role === 'seeker' ? '#5194EA' : '#E5E7EB',
                     borderWidth: role === 'seeker' ? 1.5 : 1,
                     transform: pressed ? [{ scale: 0.98 }] : [{ scale: 1 }],
                   },
@@ -118,20 +145,20 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
               >
                 <View
                   style={{
-                    backgroundColor: role === 'seeker' ? '#58c76320' : '#F3F4F6',
+                    backgroundColor: role === 'seeker' ? '#5194EA20' : '#F3F4F6',
                   }}
                   className="w-10 h-10 rounded-xl items-center justify-center"
                 >
                   <User
                     size={20}
-                    color={role === 'seeker' ? '#3fa349' : '#9CA3AF'}
+                    color={role === 'seeker' ? '#3A7BD5' : '#9CA3AF'}
                     strokeWidth={2.2}
                   />
                 </View>
                 <View className="flex-1">
                   <Text
                     style={{
-                      color: role === 'seeker' ? '#166534' : '#374151',
+                      color: role === 'seeker' ? '#1E40AF' : '#374151',
                     }}
                     className="text-sm font-bold leading-tight"
                   >
@@ -139,7 +166,7 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
                   </Text>
                   <Text
                     style={{
-                      color: role === 'seeker' ? '#15803D' : '#9CA3AF',
+                      color: role === 'seeker' ? '#3B82F6' : '#9CA3AF',
                     }}
                     className="text-[11px] font-medium mt-0.5"
                   >
@@ -153,8 +180,8 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
                 onPress={() => setRole('owner')}
                 style={({ pressed }) => [
                   {
-                    backgroundColor: role === 'owner' ? '#F0FDF4' : '#FFFFFF',
-                    borderColor: role === 'owner' ? '#58c763' : '#E5E7EB',
+                    backgroundColor: role === 'owner' ? '#EFF6FF' : '#FFFFFF',
+                    borderColor: role === 'owner' ? '#5194EA' : '#E5E7EB',
                     borderWidth: role === 'owner' ? 1.5 : 1,
                     transform: pressed ? [{ scale: 0.98 }] : [{ scale: 1 }],
                   },
@@ -163,20 +190,20 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
               >
                 <View
                   style={{
-                    backgroundColor: role === 'owner' ? '#58c76320' : '#F3F4F6',
+                    backgroundColor: role === 'owner' ? '#5194EA20' : '#F3F4F6',
                   }}
                   className="w-10 h-10 rounded-xl items-center justify-center"
                 >
                   <Building2
                     size={20}
-                    color={role === 'owner' ? '#3fa349' : '#9CA3AF'}
+                    color={role === 'owner' ? '#3A7BD5' : '#9CA3AF'}
                     strokeWidth={2.2}
                   />
                 </View>
                 <View className="flex-1">
                   <Text
                     style={{
-                      color: role === 'owner' ? '#166534' : '#374151',
+                      color: role === 'owner' ? '#1E40AF' : '#374151',
                     }}
                     className="text-sm font-bold leading-tight"
                   >
@@ -184,7 +211,7 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
                   </Text>
                   <Text
                     style={{
-                      color: role === 'owner' ? '#15803D' : '#9CA3AF',
+                      color: role === 'owner' ? '#3B82F6' : '#9CA3AF',
                     }}
                     className="text-[11px] font-medium mt-0.5"
                   >
@@ -248,14 +275,12 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
               )}
             </View>
 
-            {/* Continue / Lanjutkan Button (Solid Green with Pure White Text) */}
+            {/* Continue / Lanjutkan Button (Solid Blue #5194EA) */}
             <Button
               title="Lanjutkan"
-              disabled={!isValid || isSubmitting}
               loading={isLoading || isSubmitting}
               style={{
-                backgroundColor: '#58c763',
-                opacity: isValid ? 1 : 0.6,
+                backgroundColor: '#5194EA',
               }}
               textStyle={{
                 color: '#FFFFFF',
@@ -275,16 +300,17 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
                   if (onGoToRegister) {
                     onGoToRegister();
                   } else {
-                    Alert.alert(
-                      'Daftar Akun',
-                      `Membuka halaman pendaftaran untuk ${
-                        role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos'
-                      }...`
+                    showAlert(
+                       'Daftar Akun',
+                       `Membuka halaman pendaftaran untuk ${
+                         role === 'seeker' ? 'Pencari Kos' : 'Mitra Kos'
+                       }...`,
+                       'info'
                     );
                   }
                 }}
               >
-                <Text className="text-sm font-bold text-[#58c763]">
+                <Text className="text-sm font-bold text-[#5194EA]">
                   Daftar di sini
                 </Text>
               </Pressable>
@@ -340,20 +366,20 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
             <View className="flex-row items-center justify-center gap-1 mt-0.5">
               <Pressable
                 onPress={() =>
-                  Alert.alert('Syarat & Ketentuan', 'Halaman Syarat & Ketentuan Layanan.')
+                  showAlert('Syarat & Ketentuan', 'Halaman Syarat & Ketentuan Layanan Aplikasi Sistemagis Kos.', 'info')
                 }
               >
-                <Text className="text-xs font-semibold text-[#58c763]">
+                <Text className="text-xs font-semibold text-[#5194EA]">
                   Syarat & Ketentuan
                 </Text>
               </Pressable>
               <Text className="text-xs text-gray-400">dan</Text>
               <Pressable
                 onPress={() =>
-                  Alert.alert('Kebijakan Privasi', 'Halaman Kebijakan Privasi.')
+                  showAlert('Kebijakan Privasi', 'Halaman Kebijakan Privasi Data Pengguna Sistemagis Kos.', 'info')
                 }
               >
-                <Text className="text-xs font-semibold text-[#58c763]">
+                <Text className="text-xs font-semibold text-[#5194EA]">
                   Kebijakan Privasi
                 </Text>
               </Pressable>
@@ -361,6 +387,23 @@ export default function LoginPage({ onBack, onGoToRegister, onSuccess }: LoginPr
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* In-App Custom Alert Modal */}
+      <CustomAlertModal
+        visible={alertModal.visible}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+        confirmText={alertModal.confirmText}
+        cancelText={alertModal.cancelText}
+        onConfirm={() => {
+          if (alertModal.onConfirm) {
+            alertModal.onConfirm();
+          }
+          setAlertModal({ ...alertModal, visible: false });
+        }}
+        onClose={() => setAlertModal({ ...alertModal, visible: false })}
+      />
     </SafeAreaView>
   );
 }

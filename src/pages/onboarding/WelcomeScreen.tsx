@@ -28,11 +28,11 @@ export default function WelcomeScreen({
       {/* Top Half: Hero Illustration Banner with Soft Curved Bottom */}
       <View
         style={{ height: height * 0.52 }}
-        className="w-full bg-[#EBF8EE] items-center justify-center relative overflow-hidden"
+        className="w-full bg-[#EFF6FF] items-center justify-center relative overflow-hidden"
       >
         {/* Soft Background Accent Circles */}
-        <View className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-[#58c76315]" />
-        <View className="absolute bottom-10 -left-10 w-48 h-48 rounded-full bg-[#58c76310]" />
+        <View className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-[#5194EA15]" />
+        <View className="absolute bottom-10 -left-10 w-48 h-48 rounded-full bg-[#5194EA10]" />
 
         {/* Hero Image Container Slot */}
         <View className="items-center justify-center px-6">
@@ -69,7 +69,7 @@ export default function WelcomeScreen({
       >
         <View className="items-center pt-2">
           {/* Mini Logo */}
-          <View className="w-11 h-11 rounded-full bg-[#58c76315] border border-[#58c76330] items-center justify-center mb-4 overflow-hidden">
+          <View className="w-11 h-11 rounded-full bg-[#5194EA15] border border-[#5194EA30] items-center justify-center mb-4 overflow-hidden">
             <Image
               source={require('../../../assets/logo/logomagis.png')}
               style={{ width: 28, height: 28 }}
@@ -94,7 +94,7 @@ export default function WelcomeScreen({
             title="Mulai Sekarang"
             variant="default"
             size="lg"
-            style={{ backgroundColor: '#58c763' }}
+            style={{ backgroundColor: '#5194EA' }}
             textStyle={{ color: '#FFFFFF' }}
             className="w-full h-14 rounded-2xl shadow-md"
             textClassName="text-base font-bold text-white tracking-wide"

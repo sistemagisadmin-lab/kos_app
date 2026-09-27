@@ -34,7 +34,7 @@ export function Button({
   const getVariantStyles = () => {
     switch (variant) {
       case 'emerald':
-        return 'bg-[#58c763] active:bg-[#48b352] text-white shadow-sm';
+        return 'bg-[#5194EA] active:bg-[#3B82F6] text-white shadow-sm';
       case 'destructive':
         return 'bg-red-600 active:bg-red-700 text-white shadow-sm';
       case 'outline':
@@ -44,10 +44,10 @@ export function Button({
       case 'ghost':
         return 'bg-transparent active:bg-gray-100 text-gray-900';
       case 'link':
-        return 'bg-transparent underline-offset-4 text-[#58c763]';
+        return 'bg-transparent underline-offset-4 text-[#5194EA]';
       case 'default':
       default:
-        return 'bg-[#58c763] active:bg-[#48b352] text-white shadow-sm';
+        return 'bg-[#5194EA] active:bg-[#3B82F6] text-white shadow-sm';
     }
   };
 
@@ -58,7 +58,7 @@ export function Button({
       case 'ghost':
         return 'text-gray-900 font-semibold';
       case 'link':
-        return 'text-[#58c763] underline font-semibold';
+        return 'text-[#5194EA] underline font-semibold';
       case 'destructive':
       case 'emerald':
       case 'default':

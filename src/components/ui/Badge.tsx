@@ -26,10 +26,10 @@ export function Badge({
       case 'outline':
         return 'bg-transparent border border-gray-200 text-gray-900';
       case 'success':
-        return 'bg-[#58c76315] border-[#58c76340] text-[#3ea348]';
+        return 'bg-[#5194EA15] border-[#5194EA40] text-[#3A7BD5]';
       case 'default':
       default:
-        return 'bg-[#58c763] border-transparent text-white';
+        return 'bg-[#5194EA] border-transparent text-white';
     }
   };
 
@@ -39,7 +39,7 @@ export function Badge({
       case 'outline':
         return 'text-gray-800';
       case 'success':
-        return 'text-[#3ea348]';
+        return 'text-[#3A7BD5]';
       case 'destructive':
       case 'default':
       default:

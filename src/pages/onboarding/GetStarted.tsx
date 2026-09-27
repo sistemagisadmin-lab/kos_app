@@ -24,21 +24,21 @@ const slides: OnboardingSlide[] = [
     title: 'Cari & Temukan Kos Nyaman Impianmu',
     description:
       'Ribuan pilihan kamar kos strategis, bersih, dan berfasilitas lengkap siap dihuni kapan saja.',
-    icon: <Building2 size={68} color="#58c763" strokeWidth={1.75} />,
+    icon: <Building2 size={68} color="#5194EA" strokeWidth={1.75} />,
   },
   {
     id: '2',
     title: 'Booking Cepat & Pembayaran Aman',
     description:
       'Sewa kamar dan bayar tagihan bulanan langsung dari aplikasi dengan jaminan keamanan transaksi 100%.',
-    icon: <ShieldCheck size={68} color="#58c763" strokeWidth={1.75} />,
+    icon: <ShieldCheck size={68} color="#5194EA" strokeWidth={1.75} />,
   },
   {
     id: '3',
     title: 'Kelola Hunian Praktis Dalam Satu Genggaman',
     description:
       'Komunikasi mudah dengan pemilik kos, ajukan komplain fasilitas, dan pantau status tagihan tanpa ribet.',
-    icon: <Sparkles size={68} color="#58c763" strokeWidth={1.75} />,
+    icon: <Sparkles size={68} color="#5194EA" strokeWidth={1.75} />,
   },
 ];
 
@@ -96,13 +96,13 @@ export default function GetStartedScreen({ onFinish }: GetStartedProps) {
           ) : (
             <View className="items-center justify-center">
               <View
-                style={{ backgroundColor: '#58c76318' }}
+                style={{ backgroundColor: '#5194EA18' }}
                 className="w-24 h-24 rounded-2xl items-center justify-center mb-3"
               >
                 {currentSlide.icon}
               </View>
               <Text
-                style={{ color: '#3fa349', borderColor: '#58c76340' }}
+                style={{ color: '#3A7BD5', borderColor: '#5194EA40' }}
                 className="text-xs font-semibold bg-white border px-3 py-1 rounded-full shadow-xs"
               >
                 Asset Gambar Anda
@@ -111,7 +111,7 @@ export default function GetStartedScreen({ onFinish }: GetStartedProps) {
           )}
         </View>
 
-        {/* Pagination Indicators (Pill + Dots with exact #58c763) */}
+        {/* Pagination Indicators (Pill + Dots with exact #5194EA) */}
         <View className="flex-row items-center justify-center gap-1.5 mb-8">
           {slides.map((_, index) => {
             const isActive = index === currentIndex;
@@ -120,7 +120,7 @@ export default function GetStartedScreen({ onFinish }: GetStartedProps) {
                 key={index}
                 onPress={() => setCurrentIndex(index)}
                 style={{
-                  backgroundColor: isActive ? '#58c763' : '#E5E7EB',
+                  backgroundColor: isActive ? '#5194EA' : '#E5E7EB',
                 }}
                 className={`h-2 rounded-full transition-all duration-200 ${
                   isActive ? 'w-7' : 'w-2'
@@ -141,13 +141,13 @@ export default function GetStartedScreen({ onFinish }: GetStartedProps) {
         </View>
       </View>
 
-      {/* Bottom Action Area with exact #58c763 Button */}
+      {/* Bottom Action Area with exact #5194EA Button */}
       <View className="px-6 pb-8 pt-4">
         <Button
           title={isLastSlide ? 'Mulai Sekarang' : 'Lanjut'}
           variant="default"
           size="lg"
-          style={{ backgroundColor: '#58c763' }}
+          style={{ backgroundColor: '#5194EA' }}
           textStyle={{ color: '#FFFFFF' }}
           className="w-full h-14 rounded-2xl shadow-md"
           textClassName="text-base font-bold text-white tracking-wide"
